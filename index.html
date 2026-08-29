@@ -266,11 +266,7 @@ LOCAL TERMINAL // ACCESS NODE
 INITIALIZING...
 VERIFYING NETWORK...
 WAITING FOR OPERATOR...<span class="cursor"></span></div>
-
-    <!-- ============================================================
-         ÁREA DO PLAYER
-         NÃO PRECISA ALTERAR NADA AQUI.
-         ============================================================ -->
+    
     <form id="loginForm" class="login" onsubmit="return NCS.login(event);">
         <div class="prompt">IDENTIFICAÇÃO DO OPERADOR</div>
         <input
@@ -294,9 +290,7 @@ WAITING FOR OPERATOR...<span class="cursor"></span></div>
             placeholder="Digite o código"
         >
 
-        <!-- A ação agora está diretamente ligada ao FORM.
-             Isso evita o problema de o evento de clique não ser registrado. -->
-        <button type="submit" class="button">[ INICIAR SESSÃO ]</button>
+          <button type="submit" class="button">[ INICIAR SESSÃO ]</button>
 
         <div id="status" class="status" aria-live="polite"></div>
     </form>
@@ -320,27 +314,6 @@ WAITING FOR OPERATOR...<span class="cursor"></span></div>
 </div>
 
 <script>
-/* ================================================================
-   ================================================================
-   N.C.S. — ÁREA DO MESTRE
-   ================================================================
-   AQUI VOCÊ CADASTRA AS TRANSMISSÕES.
-
-   Para criar uma nova mensagem, copie este bloco:
-
-   {
-       id: "ID_DO_PLAYER",
-       code: "CODIGO",
-       title: "TÍTULO",
-       message: `
-   SUA MENSAGEM AQUI.
-   `
-   },
-
-   O PLAYER precisa informar exatamente o ID + código correspondentes.
-   O sistema mostrará somente a mensagem associada aos dois.
-
-   ================================================================ */
 
 const transmissions = [
 
@@ -751,43 +724,7 @@ END OF TRANSMISSION
 `
 },
 
-    /* ============================================================
-       EXEMPLO DE NOVA MENSAGEM.
-       COPIE ESTE BLOCO PARA ADICIONAR OUTROS PLAYERS.
-       ============================================================ */
-    /*
-    {
-        id: "ELINA",
-        code: "RAVEN-44",
-        title: "NCPD SECURE CHANNEL",
-        message: `
-NCPD SECURE CHANNEL
-
-ACCESS GRANTED
-
-DESTINATÁRIO: ELINA
-CLASSIFICAÇÃO: RESTRITO
-
-
-Sua missão começa agora.
-
-Observe.
-Colete.
-Transmita.
-
-
-— N.C.S.
-
-END OF TRANSMISSION
-`
-    },
-    */
-
 ];
-
-/* ================================================================
-   NÃO EDITE A PARTIR DAQUI.
-   ================================================================ */
 
 const NCS = {
     login(event){
