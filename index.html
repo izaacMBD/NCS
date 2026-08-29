@@ -324,8 +324,19 @@ WAITING FOR OPERATOR...<span class="cursor"></span></div>
 
 ADMINISTRATOR ACCESS GRANTED
 
+> BANCO REMOTO: /data/transmissions.json
 > COLE ABAIXO UMA TRANSMISSÃO NO MESMO FORMATO DO BANCO DO N.C.S.
 > O SISTEMA VAI LER ID, CODE, TITLE E MESSAGE AUTOMATICAMENTE.</div>
+
+        <div class="prompt">GITHUB TOKEN DO MESTRE</div>
+        <input
+            id="githubToken"
+            class="field"
+            type="password"
+            autocomplete="new-password"
+            spellcheck="false"
+            placeholder="ghp_... / github_pat_..."
+        >
 
         <textarea id="adminInput" class="admin-box" spellcheck="false" autocomplete="off" placeholder='Exemplo:
 
@@ -344,8 +355,9 @@ SUA MENSAGEM AQUI.
         </div>
 
         <div id="adminStatus" class="status" aria-live="polite"></div>
-        <div class="admin-note">As transmissões adicionadas são salvas no armazenamento local deste navegador.
-Se abrir o N.C.S. em outro aparelho/navegador, o banco local não será compartilhado automaticamente.</div>
+        <div class="admin-note">O banco principal deste N.C.S. fica no GitHub em /data/transmissions.json.
+O token é usado somente em memória durante esta sessão do Modo Mestre e não é salvo no navegador.
+Para gravar no GitHub, o token precisa ter permissão de escrita no conteúdo deste repositório.</div>
         <div id="adminList" class="admin-list"></div>
 
         <div class="actions">
@@ -871,9 +883,38 @@ END OF SESSION RECORD
 
 ];
 
-const NCS_STORAGE_KEY = "NCS_CUSTOM_TRANSMISSIONS_V1";
 const NCS_ADMIN_ID = "Izaac";
 const NCS_ADMIN_CODE = "78Boss";
+
+/*
+ * Banco remoto do GitHub.
+ *
+ * O sistema tenta descobrir automaticamente:
+ * - owner: dono do GitHub Pages
+ * - repo: repositório do site
+ *
+ * Para um projeto em:
+ *   https://usuario.github.io/meu-site/
+ * será usado:
+ *   owner = usuario
+ *   repo  = meu-site
+ *
+ * Para um site de usuário em:
+ *   https://usuario.github.io/
+ * será usado:
+ *   repo = usuario.github.io
+ *
+ * Caso use domínio próprio ou uma estrutura diferente, preencha
+ * manualmente NCS_GITHUB_OWNER e NCS_GITHUB_REPO.
+ */
+const NCS_GITHUB_OWNER = "";
+const NCS_GITHUB_REPO = "";
+const NCS_GITHUB_BRANCH = "main";
+const NCS_GITHUB_PATH = "data/transmissions.json";
+
+let customTransmissions = [];
+let githubFileSha = null;
+let githubToken = "";
 
 function isValidTransmission(item){
     return item &&
@@ -885,32 +926,225 @@ function isValidTransmission(item){
         item.code.trim() !== "";
 }
 
-function loadCustomTransmissions(){
+function detectGithubConfig(){
+    const host = window.location.hostname;
+    const path = window.location.pathname;
+
+    let owner = NCS_GITHUB_OWNER;
+    let repo = NCS_GITHUB_REPO;
+
+    if(!owner && host.endsWith(".github.io")){
+        owner = host.split(".")[0];
+    }
+
+    if(!repo && host.endsWith(".github.io")){
+        const segments = path.split("/").filter(Boolean);
+
+        if(segments.length > 0){
+            repo = segments[0];
+        }else if(owner){
+            repo = owner + ".github.io";
+        }
+    }
+
+    return { owner, repo, branch: NCS_GITHUB_BRANCH, path: NCS_GITHUB_PATH };
+}
+
+function getGithubApiUrl(){
+    const cfg = detectGithubConfig();
+
+    if(!cfg.owner || !cfg.repo){
+        throw new Error(
+            "NÃO FOI POSSÍVEL IDENTIFICAR AUTOMATICAMENTE O REPOSITÓRIO. " +
+            "PREENCHA NCS_GITHUB_OWNER E NCS_GITHUB_REPO NO CÓDIGO."
+        );
+    }
+
+    return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.path}`;
+}
+
+function getGithubRawUrl(){
+    const cfg = detectGithubConfig();
+
+    if(!cfg.owner || !cfg.repo){
+        return null;
+    }
+
+    return `https://raw.githubusercontent.com/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/${encodeURIComponent(cfg.branch)}/${cfg.path}`;
+}
+
+function base64ToUtf8(base64){
+    const binary = atob(base64.replace(/\n/g, ""));
+    const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+    return new TextDecoder("utf-8").decode(bytes);
+}
+
+function utf8ToBase64(text){
+    const bytes = new TextEncoder().encode(text);
+    let binary = "";
+    const chunkSize = 0x8000;
+
+    for(let i=0; i<bytes.length; i += chunkSize){
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+
+    return btoa(binary);
+}
+
+async function loadRemoteTransmissions(){
     try{
-        const raw = localStorage.getItem(NCS_STORAGE_KEY);
-        const data = raw ? JSON.parse(raw) : [];
-        return Array.isArray(data) ? data.filter(isValidTransmission) : [];
+        const apiUrl = getGithubApiUrl();
+
+        const response = await fetch(
+            apiUrl + `?ref=${encodeURIComponent(NCS_GITHUB_BRANCH)}&t=${Date.now()}`,
+            {
+                method:"GET",
+                headers:{
+                    "Accept":"application/vnd.github+json"
+                },
+                cache:"no-store"
+            }
+        );
+
+        if(!response.ok){
+            if(response.status === 404){
+                customTransmissions = [];
+                githubFileSha = null;
+                return { ok:true, created:false, missing:true };
+            }
+
+            throw new Error(`GITHUB RESPONDEU ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if(!data.content){
+            throw new Error("O ARQUIVO NÃO POSSUI CONTEÚDO LEGÍVEL.");
+        }
+
+        const decoded = base64ToUtf8(data.content);
+        const parsed = JSON.parse(decoded);
+
+        if(!Array.isArray(parsed)){
+            throw new Error("data/transmissions.json DEVE CONTER UM ARRAY JSON.");
+        }
+
+        customTransmissions = parsed.filter(isValidTransmission);
+        githubFileSha = data.sha || null;
+
+        return { ok:true, created:true, missing:false };
     }catch(error){
-        return [];
+        console.error("NCS loadRemoteTransmissions:", error);
+        customTransmissions = [];
+        githubFileSha = null;
+        return { ok:false, error };
     }
 }
 
-function saveCustomTransmissions(){
-    try{
-        localStorage.setItem(NCS_STORAGE_KEY, JSON.stringify(customTransmissions));
-        return true;
-    }catch(error){
-        return false;
+async function readRemoteFileForWrite(){
+    const apiUrl = getGithubApiUrl();
+
+    const response = await fetch(
+        apiUrl + `?ref=${encodeURIComponent(NCS_GITHUB_BRANCH)}&t=${Date.now()}`,
+        {
+            method:"GET",
+            headers:{
+                "Accept":"application/vnd.github+json"
+            },
+            cache:"no-store"
+        }
+    );
+
+    if(response.status === 404){
+        return {
+            sha:null,
+            data:[]
+        };
     }
+
+    if(!response.ok){
+        throw new Error(`FALHA AO LER O ARQUIVO NO GITHUB: HTTP ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const decoded = base64ToUtf8(payload.content || "");
+    let parsed = [];
+
+    if(decoded.trim()){
+        parsed = JSON.parse(decoded);
+    }
+
+    if(!Array.isArray(parsed)){
+        throw new Error("O CONTEÚDO ATUAL DE transmissions.json NÃO É UM ARRAY.");
+    }
+
+    return {
+        sha:payload.sha || null,
+        data:parsed.filter(isValidTransmission)
+    };
 }
 
-function escapeHtml(text){
-    const el=document.createElement("div");
-    el.textContent=text;
-    return el.innerHTML;
-}
+async function saveRemoteTransmissions(commitMessage){
+    if(!githubToken){
+        throw new Error("INFORME O GITHUB TOKEN DO MESTRE.");
+    }
 
-let customTransmissions = loadCustomTransmissions();
+    const cfg = detectGithubConfig();
+    if(!cfg.owner || !cfg.repo){
+        throw new Error(
+            "REPOSITÓRIO NÃO IDENTIFICADO. PREENCHA NCS_GITHUB_OWNER E NCS_GITHUB_REPO."
+        );
+    }
+
+    // Sempre lemos a versão atual antes do PUT para obter o SHA mais recente
+    // e reduzir conflitos quando o arquivo foi alterado fora do navegador.
+    const current = await readRemoteFileForWrite();
+
+    const response = await fetch(getGithubApiUrl(), {
+        method:"PUT",
+        headers:{
+            "Accept":"application/vnd.github+json",
+            "Content-Type":"application/json",
+            "Authorization":`Bearer ${githubToken}`
+        },
+        body:JSON.stringify({
+            message:commitMessage,
+            content:utf8ToBase64(JSON.stringify(customTransmissions, null, 2) + "\n"),
+            branch:cfg.branch,
+            ...(current.sha ? {sha:current.sha} : {})
+        })
+    });
+
+    if(!response.ok){
+        let detail = "";
+        try{
+            const errorData = await response.json();
+            detail = errorData && errorData.message ? ` — ${errorData.message}` : "";
+        }catch(_){}
+
+        if(response.status === 409){
+            throw new Error(
+                "CONFLITO: O transmissions.json MUDOU NO GITHUB. " +
+                "RECARREGUE A PÁGINA E TENTE NOVAMENTE."
+            );
+        }
+
+        if(response.status === 401 || response.status === 403){
+            throw new Error(
+                "TOKEN SEM AUTORIZAÇÃO PARA ESCREVER NESTE REPOSITÓRIO" + detail
+            );
+        }
+
+        throw new Error(`GITHUB RECUSOU A GRAVAÇÃO: HTTP ${response.status}${detail}`);
+    }
+
+    const result = await response.json();
+    githubFileSha = result.content && result.content.sha
+        ? result.content.sha
+        : current.sha;
+
+    return result;
+}
 
 function getAllTransmissions(){
     return transmissions.concat(customTransmissions);
@@ -964,14 +1198,38 @@ const NCS = {
         return false;
     },
 
-    openAdmin(){
+    async openAdmin(){
         document.getElementById("loginForm").classList.add("hidden");
         document.getElementById("messageScreen").classList.remove("active");
         document.getElementById("adminPanel").classList.add("active");
         NCS.setStatus("> MODO MESTRE ATIVADO.", false);
-        NCS.setAdminStatus("> BANCO LOCAL CARREGADO.", false);
+        NCS.setAdminStatus("> LENDO /data/transmissions.json NO GITHUB...", false);
+
+        const result = await loadRemoteTransmissions();
+
+        if(result.ok){
+            if(result.missing){
+                NCS.setAdminStatus(
+                    "> transmissions.json AINDA NÃO EXISTE.\n" +
+                    "> A PRIMEIRA INSERÇÃO IRÁ CRIAR O ARQUIVO.",
+                    false
+                );
+            }else{
+                NCS.setAdminStatus(
+                    `> BANCO REMOTO CARREGADO.\n> ${customTransmissions.length} TRANSMISSÃO(ÕES) ENCONTRADA(S).`,
+                    false
+                );
+            }
+        }else{
+            NCS.setAdminStatus(
+                "> AVISO: NÃO FOI POSSÍVEL LER O BANCO REMOTO.\n" +
+                "> " + result.error.message,
+                true
+            );
+        }
+
         NCS.renderAdminList();
-        document.getElementById("adminInput").focus();
+        document.getElementById("githubToken").focus();
         return false;
     },
 
@@ -994,8 +1252,17 @@ const NCS = {
         };
     },
 
-    addTransmission(){
+    async addTransmission(){
         const box=document.getElementById("adminInput");
+        const tokenBox=document.getElementById("githubToken");
+
+        githubToken = tokenBox ? tokenBox.value.trim() : "";
+
+        if(!githubToken){
+            NCS.setAdminStatus("> ERRO: INFORME O GITHUB TOKEN DO MESTRE.", true);
+            return;
+        }
+
         if(!box.value.trim()){
             NCS.setAdminStatus("> ERRO: COLE UMA TRANSMISSÃO NA TEXT-BOX.", true);
             return;
@@ -1003,6 +1270,11 @@ const NCS = {
 
         try{
             const item=NCS.parseTransmission(box.value);
+
+            // Recarrega a versão mais recente antes de editar o banco.
+            const remote = await readRemoteFileForWrite();
+            customTransmissions = remote.data;
+
             const index=customTransmissions.findIndex(existing =>
                 existing.id.toLowerCase()===item.id.toLowerCase() &&
                 existing.code.toLowerCase()===item.code.toLowerCase()
@@ -1014,13 +1286,16 @@ const NCS = {
                 customTransmissions.push(item);
             }
 
-            if(!saveCustomTransmissions()){
-                throw new Error("NÃO FOI POSSÍVEL SALVAR NO NAVEGADOR.");
-            }
+            await saveRemoteTransmissions(
+                index>=0
+                    ? `Update transmission ${item.id} // ${item.code}`
+                    : `Add transmission ${item.id} // ${item.code}`
+            );
 
             box.value="";
             NCS.setAdminStatus(
-                `> ${index>=0 ? "TRANSMISSÃO ATUALIZADA" : "TRANSMISSÃO INSERIDA"}.\n> ID: ${item.id}\n> CÓDIGO: ${item.code}`,
+                `> ${index>=0 ? "TRANSMISSÃO ATUALIZADA" : "TRANSMISSÃO INSERIDA"} NO GITHUB.\n` +
+                `> ID: ${item.id}\n> CÓDIGO: ${item.code}\n> ARQUIVO: /data/transmissions.json`,
                 false
             );
             NCS.renderAdminList();
@@ -1057,17 +1332,53 @@ TITLE: ${escapeHtml(item.title)}</div>
         `).join("");
     },
 
-    deleteTransmission(index){
+    async deleteTransmission(index){
         const item=customTransmissions[index];
         if(!item) return;
-        if(!window.confirm(`Excluir "${item.title}" (${item.id} // ${item.code})?`)) return;
 
-        customTransmissions.splice(index,1);
-        if(saveCustomTransmissions()){
+        if(!window.confirm(`Excluir "${item.title}" (${item.id} // ${item.code}) do banco do GitHub?`)){
+            return;
+        }
+
+        const tokenBox=document.getElementById("githubToken");
+        githubToken = tokenBox ? tokenBox.value.trim() : "";
+
+        if(!githubToken){
+            NCS.setAdminStatus("> ERRO: INFORME O GITHUB TOKEN DO MESTRE.", true);
+            return;
+        }
+
+        try{
+            const remote = await readRemoteFileForWrite();
+            customTransmissions = remote.data;
+
+            const remoteIndex = customTransmissions.findIndex(existing =>
+                existing.id.toLowerCase()===item.id.toLowerCase() &&
+                existing.code.toLowerCase()===item.code.toLowerCase()
+            );
+
+            if(remoteIndex < 0){
+                NCS.setAdminStatus(
+                    "> A TRANSMISSÃO JÁ NÃO EXISTE NO BANCO REMOTO.",
+                    true
+                );
+                NCS.renderAdminList();
+                return;
+            }
+
+            customTransmissions.splice(remoteIndex,1);
+
+            await saveRemoteTransmissions(
+                `Delete transmission ${item.id} // ${item.code}`
+            );
+
             NCS.renderAdminList();
-            NCS.setAdminStatus("> TRANSMISSÃO EXCLUÍDA.", false);
-        }else{
-            NCS.setAdminStatus("> ERRO AO SALVAR A EXCLUSÃO.", true);
+            NCS.setAdminStatus(
+                `> TRANSMISSÃO EXCLUÍDA DO GITHUB.\n> ARQUIVO: /data/transmissions.json`,
+                false
+            );
+        }catch(error){
+            NCS.setAdminStatus("> ERRO AO EXCLUIR: " + error.message, true);
         }
     },
 
@@ -1076,6 +1387,9 @@ TITLE: ${escapeHtml(item.title)}</div>
         document.getElementById("loginForm").classList.remove("hidden");
         document.getElementById("userId").value="";
         document.getElementById("accessCode").value="";
+        const tokenBox=document.getElementById("githubToken");
+        if(tokenBox) tokenBox.value="";
+        githubToken="";
         NCS.setStatus("> SESSÃO DE MESTRE ENCERRADA.", false);
         window.scrollTo({top:0,behavior:"smooth"});
     },
@@ -1182,11 +1496,20 @@ function updateClock(){
 updateClock();
 window.setInterval(updateClock, 1000);
 
-window.setTimeout(() => {
+window.addEventListener("DOMContentLoaded", async () => {
     const input = document.getElementById("userId");
     if(input) input.focus();
-}, 700);
+
+    // Carrega o banco remoto em segundo plano para que qualquer visitante
+    // consiga autenticar nas transmissões publicadas no GitHub.
+    const result = await loadRemoteTransmissions();
+
+    if(!result.ok){
+        console.warn("NCS: banco remoto indisponível.", result.error);
+    }
+});
 </script>
 </body>
 </html>
+
 
