@@ -1203,7 +1203,7 @@ const NCS = {
         document.getElementById("messageScreen").classList.remove("active");
         document.getElementById("adminPanel").classList.add("active");
         NCS.setStatus("> MODO MESTRE ATIVADO.", false);
-        NCS.setAdminStatus("> LENDO /data/transmissions.json NO GITHUB...", false);
+        NCS.setAdminStatus("> LENDO transmissions.json NO GITHUB...", false);
 
         const result = await loadRemoteTransmissions();
 
@@ -1295,7 +1295,7 @@ const NCS = {
             box.value="";
             NCS.setAdminStatus(
                 `> ${index>=0 ? "TRANSMISSÃO ATUALIZADA" : "TRANSMISSÃO INSERIDA"} NO GITHUB.\n` +
-                `> ID: ${item.id}\n> CÓDIGO: ${item.code}\n> ARQUIVO: /data/transmissions.json`,
+                `> ID: ${item.id}\n> CÓDIGO: ${item.code}\n> ARQUIVO: transmissions.json`,
                 false
             );
             NCS.renderAdminList();
@@ -1374,7 +1374,7 @@ TITLE: ${escapeHtml(item.title)}</div>
 
             NCS.renderAdminList();
             NCS.setAdminStatus(
-                `> TRANSMISSÃO EXCLUÍDA DO GITHUB.\n> ARQUIVO: /data/transmissions.json`,
+                `> TRANSMISSÃO EXCLUÍDA DO GITHUB.\n> ARQUIVO: transmissions.json`,
                 false
             );
         }catch(error){
