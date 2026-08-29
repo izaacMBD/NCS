@@ -1,1 +1,51 @@
+name: NCS - Atualizar Transmissions
 
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-transmissions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Verificar transmissions.json
+        run: |
+          if [ ! -f transmissions.json ]; then
+            echo "transmissions.json não encontrado."
+            exit 1
+          fi
+
+      - name: Validar JSON
+        run: |
+          python - <<'PY'
+          import json
+
+          with open("transmissions.json", "r", encoding="utf-8") as f:
+              data = json.load(f)
+
+          if not isinstance(data, list):
+              raise SystemExit("transmissions.json precisa conter um array JSON.")
+
+          print(f"OK: {len(data)} transmissão(ões) encontrada(s).")
+          PY
+
+      - name: Salvar alterações
+        run: |
+          git config user.name "NCS Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add transmissions.json
+
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração para salvar."
+            exit 0
+          fi
+
+          git commit -m "NCS: atualizar transmissions.json"
+          git push
