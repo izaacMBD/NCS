@@ -324,19 +324,14 @@ WAITING FOR OPERATOR...<span class="cursor"></span></div>
 
 ADMINISTRATOR ACCESS GRANTED
 
-> BANCO REMOTO: /data/transmissions.json
+> BANCO REMOTO: /transmissions.json
 > COLE ABAIXO UMA TRANSMISSÃO NO MESMO FORMATO DO BANCO DO N.C.S.
 > O SISTEMA VAI LER ID, CODE, TITLE E MESSAGE AUTOMATICAMENTE.</div>
 
-        <div class="prompt">GITHUB TOKEN DO MESTRE</div>
-        <input
-            id="githubToken"
-            class="field"
-            type="password"
-            autocomplete="new-password"
-            spellcheck="false"
-            placeholder="ghp_... / github_pat_..."
-        >
+        <div class="admin-note">O MODO MESTRE NÃO USA TOKEN DO GITHUB NO NAVEGADOR.
+Para publicar, o sistema prepara uma solicitação e abre uma nova Issue no GitHub.
+Você precisa estar conectado à conta proprietária do repositório e colar o payload no corpo da Issue.
+O GitHub Action valida a solicitação e grava /transmissions.json usando o GITHUB_TOKEN interno do próprio Action.</div>
 
         <textarea id="adminInput" class="admin-box" spellcheck="false" autocomplete="off" placeholder='Exemplo:
 
@@ -350,14 +345,23 @@ SUA MENSAGEM AQUI.
 },'></textarea>
 
         <div class="admin-actions">
-            <button type="button" class="button" onclick="NCS.addTransmission()">[ INSERIR TRANSMISSÃO ]</button>
+            <button type="button" class="button" onclick="NCS.addTransmission()">[ PUBLICAR TRANSMISSÃO ]</button>
             <button type="button" class="button" onclick="NCS.clearAdminInput()">[ LIMPAR TEXT-BOX ]</button>
         </div>
 
         <div id="adminStatus" class="status" aria-live="polite"></div>
-        <div class="admin-note">O banco principal deste N.C.S. fica no GitHub em /data/transmissions.json.
-O token é usado somente em memória durante esta sessão do Modo Mestre e não é salvo no navegador.
-Para gravar no GitHub, o token precisa ter permissão de escrita no conteúdo deste repositório.</div>
+        <div class="admin-note">FLUXO DE PUBLICAÇÃO:
+1. Clique em PUBLICAR.
+2. O sistema copia o payload e abre uma nova Issue no GitHub.
+3. Cole o payload no corpo da Issue e envie a Issue.
+4. O GitHub Action atualiza /transmissions.json automaticamente.
+5. Recarregue o N.C.S. para carregar a nova versão.</div>
+
+        <textarea id="issuePayload" class="admin-box" style="min-height:220px" spellcheck="false" readonly placeholder="O payload da próxima publicação aparecerá aqui."></textarea>
+        <div class="admin-actions">
+            <button type="button" class="small-button" onclick="NCS.copyIssuePayload()">[ COPIAR PAYLOAD ]</button>
+            <a id="issueLink" class="small-button" style="display:flex;align-items:center;justify-content:center;text-decoration:none" target="_blank" rel="noopener noreferrer">[ ABRIR GITHUB ]</a>
+        </div>
         <div id="adminList" class="admin-list"></div>
 
         <div class="actions">
@@ -374,547 +378,24 @@ Para gravar no GitHub, o token precisa ter permissão de escrita no conteúdo de
 </div>
 
 <script>
-
-const transmissions = [
-
-    /* -------------------- MENSAGEM #001 -------------------- */
-    {
-        id: "$hade",
-        code: "KURO-2078",
-        title: "ARASAKA SECURE NETWORK",
-        message: `
-ARASAKA SECURE NETWORK v9.4
-
-INITIALIZING...
-ACCESSING KURO NODE...
-VERIFYING OPERATOR...
-DECRYPTING TRANSMISSION...
-
-
-ACCESS GRANTED
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-ARASAKA SECURE NETWORK
-NÓ: ∅MEΠS
-REMETENTE: Bansh£e
-DESTINATÁRIO: §hade
-CLASSIFIXAÇÃO: KURO // SOMENTE OPERADOR
-
-
-§hade,
-
-
-Seus superiores requisitaram sua presença nesta operação.
-
-
-A autorização partiu diretamente do Sr. Arasaka.
-
-
-A partir deste momento, toda comunicação referente à missão ocorrerá exclusivamente entre você e eu.
-
-
-Você foi designado para uma operação de coleta de informações de alto risco.
-
-
-Seu objetivo é infiltrar-se na investigação conduzida pela NCPD sobre o roubo do protótipo de cyberware da Raven Microcybernetics.
-
-
-A Arasaka já tomou as providências necessárias para garantir sua inclusão na força-tarefa.
-
-
-Sua nova identidade será Adrian Cross.
-
-
-Toda a documentação necessária já foi inserida nos registros do Departamento de Polícia de Night City.
-
-
-O Sargento Aaron McCarlson recebeu a devida compensação para assegurar sua participação na investigação. Para todos os efeitos, você é apenas mais um investigador designado para reforçar a equipe.
-
-
-O Comissário Coleridge não conduzirá o primeiro briefing.
-
-
-Em seu lugar, comparecerá Jerry Fawlter.
-
-
-Considere essa informação apenas mais um detalhe operacional.
-
-
-Não demonstre surpresa.
-
-
-Não faça perguntas.
-
-
-Não permita que ninguém perceba que você esperava essa alteração.
-
-
-Seu único objetivo é observar.
-
-
-Coletar.
-
-
-Transmitir.
-
-
-Toda informação obtida deverá ser enviada exclusivamente para este canal.
-
-
-Nenhum outro setor da Arasaka possui autorização para receber dados desta operação.
-
-
-Caso qualquer agente da corporação tente estabelecer contato, negue conhecimento da missão e interrompa imediatamente a comunicação.
-
-
-A partir do momento em que assumir sua identidade operacional, você deixa de existir como §hade.
-
-
-Se for comprometido, negue qualquer vínculo com a Arasaka.
-
-
-Se for capturado, você jamais trabalhou para a Arasaka.
-
-
-Se for eliminado, esta operação jamais aconteceu.
-
-
-Ao término da missão, você não deixará a área por iniciativa própria.
-
-
-Quando chegar o momento da extração, você receberá uma nova transmissão contendo as coordenadas de encontro.
-
-
-Eu estarei esperando.
-
-
-Até lá...
-
-
-Permaneça invisível.
-
-
-— Bansh£e
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-END OF TRANSMISSION
-`
-    },
-
-    {
-    id: "Elina",
-    code: "Missão",
-    title: "KOLLEKTIVNOST SECURE TERMINAL",
-    message: `
-KOLLEKTIVNOST SECURE TERMINAL v2.8
-
-INITIALIZING...
-LOADING ENCRYPTION MODULE...
-ESTABLISHING SECURE CHANNEL...
-VERIFYING IDENTITY...
-
-
-ACCESS GRANTED
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-Canal Seguro // Casa da Lareira
-Origem: MÃE
-Destino: Agente E.
-Classificação: OLHOS APENAS
-
-
-Elina,
-
-
-Seu deslocamento para Night City foi autorizado.
-
-
-Ao chegar, apresente-se ao Comissário Coleridge, do Departamento de Polícia de Night City. Você será apresentada às autoridades locais como um ativo diplomático destacado para auxiliar a investigação do roubo do protótipo de cyberware da Raven Microcybernetics. Essa cobertura foi construída para lhe conceder acesso às informações que normalmente permaneceriam inacessíveis.
-
-
-O departamento designará um agente local para trabalhar ao seu lado. Coopere. Observe. Avalie. Confiança não faz parte desta missão.
-
-
-O Doutor demonstrou interesse incomum nos dados relacionados ao protótipo. Isso, por si só, basta para justificar sua presença.
-
-
-Nossos agentes obtiveram documentos sigilosos da Euro World-Bank. As informações sugerem uma possível ligação entre o incidente ocorrido em Crystal Palace e o protótipo desenvolvido pela Raven Microcybernetics. Ainda não enxergamos a estrutura completa. Apenas fragmentos.
-
-
-Se essa ligação existir, nenhuma corporação está perseguindo apenas tecnologia. Todas estão correndo em direção ao mesmo objetivo.
-
-
-Descubra qual é.
-
-
-Sua prioridade não é recuperar o protótipo.
-
-
-Sua prioridade é compreender sua natureza, identificar quem realmente o controla e transmitir toda informação relevante à Kollektivnost. Se recuperar o artefato favorecer esse objetivo, proceda. Caso contrário, conhecimento tem precedência sobre posse.
-
-
-Há algo grande movendo as peças deste tabuleiro. Grande o suficiente para fazer corporações rivais esconderem informações umas das outras e grande o suficiente para despertar o interesse do Doutor.
-
-
-Nós ainda não conseguimos vê-lo.
-
-
-Ajude-nos a enxergar.
-
-
-— Yuryeva Schneitzevna
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-END OF TRANSMISSION
-`
-},
-
-    {
-    id: "Elliot",
-    code: "Desconhecido",
-    title: "UNKNOWN SIGNAL RECEIVER",
-    message: `
-UNKNOWN SIGNAL RECEIVER v1.3
-
-INITIALIZING...
-SEARCHING FOR SIGNAL...
-SIGNAL DETECTED...
-DECRYPTING DATA STREAM...
-RECOVERING FRAGMENTS...
-
-
-WARNING
-
-
-TRANSMISSION INCOMPLETE
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-ORIGEM DESCONHECIDA
-IDENTIFICAÇÃO DO REMETENTE: RIVARD WER
-LOCALIZAÇÃO APROXIMADA: SUB-DISTRITO GLEN, NIGHT CITY
-INTEGRIDADE DA TRANSMISSÃO: 41%
-
-
-Vale,
-
-
-Não sei se esta mensagem chegará inteira.
-
-
-Meu nome é Rivard Wer. Pelo menos era. Fui agente da NCPD. Se ainda sou... já não consigo afirmar.
-
-
-Estou enviando isso porque você ainda pode fazer alguma coisa. Eu já fui longe demais.
-
-
-Há meses percebo lacunas. Dias inteiros desaparecem. Conversas que nunca tive voltam como lembranças. Rostos conhecidos se tornam estranhos e, depois de algumas horas, parecem familiares outra vez.
-
-
-Eu tomo decisões que jamais tomaria.
-
-
-Depois me lembro delas como se sempre tivessem sido minhas.
-
-
-Essa não é a minha vida.
-
-
-Descobri algo em Night City. Algo grande o suficiente para engolir esta cidade inteira. Grande o suficiente para fazer pessoas esquecerem quem são.
-
-
-Não confie em ninguém.
-
-
-A NightCorp está sendo invadida há muito tempo.
-
-
-O prefeito... já está sob o controle dele.
-
-
-A FIA...
-
-
-A NetWatch...
-
-
-A Eur...
-
-
-...não consigo lembrar o restante.
-
-
-É assim que começa.
-
-
-Primeiro eles levam pequenos detalhes.
-
-
-Depois nomes.
-
-
-Depois rostos.
-
-
-Depois você.
-
-
-Se decidir continuar investigando, faça de tudo.
-
-
-Mas não faça como eu.
-
-
-Nunca entregue seus dados.
-
-
-Nunca aceite sincronizações neurais que você não possa verificar.
-
-
-Nunca permita que acessem seu perfil cognitivo.
-
-
-Suspeite de todos.
-
-
-Até de si mesmo.
-
-
-Se um dia você tiver certeza absoluta de alguma coisa...
-
-
-Desconfie.
-
-
-...
-
-
-Eles estão aqui.
-
-
-Eu consigo ouvir...
-
-
-[ERRO DE TRANSMISSÃO]
-
-
-[CONEXÃO PERDIDA]
-
-
-ÚLTIMO SINAL REGISTRADO: SUB-DISTRITO GLEN, NIGHT CITY.
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-END OF SIGNAL
-`
-},
-
-    {
-    id: "Elliot",
-    code: "Caso-Raven",
-    title: "NCPD SECURE TERMINAL",
-    message: `
-NCPD SECURE TERMINAL v4.2
-
-INITIALIZING...
-LOADING INTERNAL DATABASE...
-ESTABLISHING SECURE CHANNEL...
-VERIFYING CREDENTIALS...
-
-
-ACCESS GRANTED
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-DEPARTAMENTO DE POLÍCIA DE NIGHT CITY
-Origem: Chefe Aaron McCarlson
-Destino: Detetive Elliot Vale
-Classificação: USO INTERNO – NCPD
-
-
-Detetive,
-
-
-Por determinação desta chefia, você foi designado para integrar a força-tarefa responsável pela investigação do roubo do protótipo de cyberware pertencente à Raven Microcybernetics.
-
-
-Sua indicação foi baseada em seu histórico operacional, na iniciativa demonstrada em campo e na confiança que este departamento deposita em sua capacidade de conduzir investigações de alta complexidade.
-
-
-Apresente-se ao Comissário Coleridge no Quartel-General da NCPD. Os detalhes da operação serão repassados durante o briefing.
-
-
-Como parte de um acordo de cooperação internacional, você atuará ao lado de um ativo diplomático estrangeiro designado para auxiliar a investigação. Espera-se profissionalismo, discrição e total cooperação entre as partes. Divergências de jurisdição ou procedimentos deverão ser reportadas exclusivamente ao Comissário Coleridge.
-
-
-As informações atualmente disponíveis indicam que este caso ultrapassa os limites de um roubo corporativo convencional. Mais detalhes serão fornecidos presencialmente.
-
-
-Compareça equipado para operação.
-
-
-Boa sorte.
-
-
-— Aaron McCarlson
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-END OF TRANSMISSION
-`
-},
-
-    {
-    id: "Mestre",
-    code: "Sessão-1",
-    title: "NCS // SESSION RECORD",
-    message: `
-NCS SESSION RECORD
-
-SESSION 01
-STATUS: CONCLUÍDA
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-REGISTRO DA SESSÃO
-
-
-A força-tarefa iniciou a investigação do roubo do protótipo de cyberware da Raven Microcybernetics.
-
-Os agentes se deslocaram até a cena do roubo do comboio da Raven, onde realizaram uma investigação preliminar.
-
-No local, conversaram com alguns trabalhadores e analisaram as câmeras de segurança disponíveis.
-
-Durante a análise das imagens e dos vestígios encontrados, foram identificadas características que indicavam que os responsáveis pelo ataque possuíam algum tipo de ligação ou treinamento militar.
-
-As roupas utilizadas e as armas empregadas durante o ataque apresentavam características associadas ao exército.
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-OBSERVAÇÃO ADICIONAL
-
-
-Durante a investigação, os agentes identificaram um indivíduo corporativo no topo de um prédio próximo à cena do crime.
-
-O indivíduo aparentemente observava o local.
-
-Os agentes decidiram abordá-lo com o objetivo de obter informações sobre sua presença e possível envolvimento no caso.
-
-Um confronto foi iniciado.
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-INTERVENÇÃO
-
-
-Antes que os agentes pudessem obter informações do indivíduo, a Trauma Team chegou ao local e interveio.
-
-O corp foi retirado da área antes que pudesse ser interrogado.
-
-Nenhuma informação direta foi obtida.
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-CONCLUSÃO DA SESSÃO
-
-
-Após o incidente, a equipe encerrou as atividades no local.
-
-Os agentes retornaram aos apartamentos em Heywood.
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-PISTAS REGISTRADAS
-
-• Atacantes utilizando roupas e armamento com características militares.
-
-• Possível ligação dos responsáveis pelo roubo com o exército.
-
-• Indivíduo corporativo observado no topo de um prédio próximo à cena.
-
-• Motivo da presença do corp permanece desconhecido.
-
-• Possível existência de outros envolvidos além dos responsáveis pelo ataque.
-
-• Protótipo de cyberware da Raven Microcybernetics permanece desaparecido.
-
-
-STATUS DO CASO: INVESTIGAÇÃO EM ANDAMENTO
-
-LOCAL ATUAL: APARTAMENTOS DE HEYWOOD
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-END OF SESSION RECORD
-`
-},
-
-];
-
 const NCS_ADMIN_ID = "Izaac";
 const NCS_ADMIN_CODE = "78Boss";
 
 /*
- * Banco remoto do GitHub.
+ * CONFIGURAÇÃO DO GITHUB
  *
- * O sistema tenta descobrir automaticamente:
- * - owner: dono do GitHub Pages
- * - repo: repositório do site
+ * Deixe vazio para o sistema tentar descobrir automaticamente pelo endereço
+ * usuario.github.io/repositorio/
  *
- * Para um projeto em:
- *   https://usuario.github.io/meu-site/
- * será usado:
- *   owner = usuario
- *   repo  = meu-site
- *
- * Para um site de usuário em:
- *   https://usuario.github.io/
- * será usado:
- *   repo = usuario.github.io
- *
- * Caso use domínio próprio ou uma estrutura diferente, preencha
- * manualmente NCS_GITHUB_OWNER e NCS_GITHUB_REPO.
+ * Para maior confiabilidade, você pode preencher manualmente.
  */
 const NCS_GITHUB_OWNER = "";
 const NCS_GITHUB_REPO = "";
-const NCS_GITHUB_BRANCH = "main";
-const NCS_GITHUB_PATH = "data/transmissions.json";
+const NCS_GITHUB_ISSUES_PATH = "issues/new";
+const NCS_TRANSMISSIONS_PATH = "./transmissions.json";
 
-let customTransmissions = [];
-let githubFileSha = null;
-let githubToken = "";
+let allTransmissions = [];
+let remoteLoaded = false;
 
 function isValidTransmission(item){
     return item &&
@@ -930,8 +411,8 @@ function detectGithubConfig(){
     const host = window.location.hostname;
     const path = window.location.pathname;
 
-    let owner = NCS_GITHUB_OWNER;
-    let repo = NCS_GITHUB_REPO;
+    let owner = NCS_GITHUB_OWNER.trim();
+    let repo = NCS_GITHUB_REPO.trim();
 
     if(!owner && host.endsWith(".github.io")){
         owner = host.split(".")[0];
@@ -939,7 +420,6 @@ function detectGithubConfig(){
 
     if(!repo && host.endsWith(".github.io")){
         const segments = path.split("/").filter(Boolean);
-
         if(segments.length > 0){
             repo = segments[0];
         }else if(owner){
@@ -947,207 +427,130 @@ function detectGithubConfig(){
         }
     }
 
-    return { owner, repo, branch: NCS_GITHUB_BRANCH, path: NCS_GITHUB_PATH };
+    return { owner, repo };
 }
 
-function getGithubApiUrl(){
+function getGithubNewIssueUrl(title){
     const cfg = detectGithubConfig();
 
     if(!cfg.owner || !cfg.repo){
         throw new Error(
-            "NÃO FOI POSSÍVEL IDENTIFICAR AUTOMATICAMENTE O REPOSITÓRIO. " +
+            "NÃO FOI POSSÍVEL IDENTIFICAR O REPOSITÓRIO. " +
             "PREENCHA NCS_GITHUB_OWNER E NCS_GITHUB_REPO NO CÓDIGO."
         );
     }
 
-    return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.path}`;
-}
-
-function getGithubRawUrl(){
-    const cfg = detectGithubConfig();
-
-    if(!cfg.owner || !cfg.repo){
-        return null;
-    }
-
-    return `https://raw.githubusercontent.com/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/${encodeURIComponent(cfg.branch)}/${cfg.path}`;
-}
-
-function base64ToUtf8(base64){
-    const binary = atob(base64.replace(/\n/g, ""));
-    const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
-    return new TextDecoder("utf-8").decode(bytes);
-}
-
-function utf8ToBase64(text){
-    const bytes = new TextEncoder().encode(text);
-    let binary = "";
-    const chunkSize = 0x8000;
-
-    for(let i=0; i<bytes.length; i += chunkSize){
-        binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-    }
-
-    return btoa(binary);
+    return `https://github.com/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/${NCS_GITHUB_ISSUES_PATH}?title=${encodeURIComponent(title)}`;
 }
 
 async function loadRemoteTransmissions(){
     try{
-        const apiUrl = getGithubApiUrl();
-
         const response = await fetch(
-            apiUrl + `?ref=${encodeURIComponent(NCS_GITHUB_BRANCH)}&t=${Date.now()}`,
+            `${NCS_TRANSMISSIONS_PATH}?t=${Date.now()}`,
             {
                 method:"GET",
-                headers:{
-                    "Accept":"application/vnd.github+json"
-                },
+                headers:{"Accept":"application/json"},
                 cache:"no-store"
             }
         );
 
         if(!response.ok){
-            if(response.status === 404){
-                customTransmissions = [];
-                githubFileSha = null;
-                return { ok:true, created:false, missing:true };
-            }
-
-            throw new Error(`GITHUB RESPONDEU ${response.status}`);
+            throw new Error(`HTTP ${response.status}`);
         }
 
-        const data = await response.json();
-
-        if(!data.content){
-            throw new Error("O ARQUIVO NÃO POSSUI CONTEÚDO LEGÍVEL.");
-        }
-
-        const decoded = base64ToUtf8(data.content);
-        const parsed = JSON.parse(decoded);
+        const parsed = await response.json();
 
         if(!Array.isArray(parsed)){
-            throw new Error("data/transmissions.json DEVE CONTER UM ARRAY JSON.");
+            throw new Error("transmissions.json DEVE CONTER UM ARRAY JSON.");
         }
 
-        customTransmissions = parsed.filter(isValidTransmission);
-        githubFileSha = data.sha || null;
-
-        return { ok:true, created:true, missing:false };
+        allTransmissions = parsed.filter(isValidTransmission);
+        remoteLoaded = true;
+        return {ok:true};
     }catch(error){
-        console.error("NCS loadRemoteTransmissions:", error);
-        customTransmissions = [];
-        githubFileSha = null;
-        return { ok:false, error };
+        allTransmissions = [];
+        remoteLoaded = false;
+        return {ok:false,error};
     }
 }
 
-async function readRemoteFileForWrite(){
-    const apiUrl = getGithubApiUrl();
+function escapeHtml(value){
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
 
-    const response = await fetch(
-        apiUrl + `?ref=${encodeURIComponent(NCS_GITHUB_BRANCH)}&t=${Date.now()}`,
-        {
-            method:"GET",
-            headers:{
-                "Accept":"application/vnd.github+json"
-            },
-            cache:"no-store"
+function buildNcsIssueBody(action, item){
+    const payload = action === "delete"
+        ? {
+            version: 1,
+            action: "delete",
+            id: item.id,
+            code: item.code
         }
-    );
-
-    if(response.status === 404){
-        return {
-            sha:null,
-            data:[]
+        : {
+            version: 1,
+            action: "upsert",
+            transmission: {
+                id: item.id,
+                code: item.code,
+                title: item.title,
+                message: item.message
+            }
         };
-    }
 
-    if(!response.ok){
-        throw new Error(`FALHA AO LER O ARQUIVO NO GITHUB: HTTP ${response.status}`);
-    }
-
-    const payload = await response.json();
-    const decoded = base64ToUtf8(payload.content || "");
-    let parsed = [];
-
-    if(decoded.trim()){
-        parsed = JSON.parse(decoded);
-    }
-
-    if(!Array.isArray(parsed)){
-        throw new Error("O CONTEÚDO ATUAL DE transmissions.json NÃO É UM ARRAY.");
-    }
-
-    return {
-        sha:payload.sha || null,
-        data:parsed.filter(isValidTransmission)
-    };
+    return [
+        "NCS_REQUEST_V1",
+        "",
+        "Solicitação gerada pelo Modo Mestre do N.C.S.",
+        "O GitHub Action processará esta solicitação.",
+        "",
+        "<!-- NCS_PAYLOAD_START",
+        JSON.stringify(payload, null, 2),
+        "NCS_PAYLOAD_END -->"
+    ].join("\n");
 }
 
-async function saveRemoteTransmissions(commitMessage){
-    if(!githubToken){
-        throw new Error("INFORME O GITHUB TOKEN DO MESTRE.");
+async function copyText(text){
+    if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(text);
+        return true;
     }
 
-    const cfg = detectGithubConfig();
-    if(!cfg.owner || !cfg.repo){
-        throw new Error(
-            "REPOSITÓRIO NÃO IDENTIFICADO. PREENCHA NCS_GITHUB_OWNER E NCS_GITHUB_REPO."
-        );
-    }
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
 
-    // Sempre lemos a versão atual antes do PUT para obter o SHA mais recente
-    // e reduzir conflitos quando o arquivo foi alterado fora do navegador.
-    const current = await readRemoteFileForWrite();
+    let ok = false;
+    try{ ok = document.execCommand("copy"); }catch(_){ ok = false; }
+    area.remove();
+    return ok;
+}
 
-    const response = await fetch(getGithubApiUrl(), {
-        method:"PUT",
-        headers:{
-            "Accept":"application/vnd.github+json",
-            "Content-Type":"application/json",
-            "Authorization":`Bearer ${githubToken}`
-        },
-        body:JSON.stringify({
-            message:commitMessage,
-            content:utf8ToBase64(JSON.stringify(customTransmissions, null, 2) + "\n"),
-            branch:cfg.branch,
-            ...(current.sha ? {sha:current.sha} : {})
-        })
+function publishViaGithubIssue(action, item){
+    const body = buildNcsIssueBody(action, item);
+    const title = action === "delete"
+        ? `[NCS] DELETE ${item.id} // ${item.code}`
+        : `[NCS] UPSERT ${item.id} // ${item.code}`;
+
+    const url = getGithubNewIssueUrl(title);
+    const ok = window.open(url, "_blank", "noopener,noreferrer");
+
+    copyText(body).then(copied => {
+        const message = copied
+            ? "> PAYLOAD COPIADO PARA A ÁREA DE TRANSFERÊNCIA.\n> NO GITHUB, COLE NO CAMPO DA ISSUE E CLIQUE EM \"SUBMIT NEW ISSUE\"."
+            : "> ABRI O GITHUB, MAS NÃO CONSEGUI COPIAR AUTOMATICAMENTE.\n> USE O TEXTO GERADO ABAIXO NO CORPO DA ISSUE.";
+
+        NCS.setAdminStatus(message, !ok || !copied);
+        NCS.showIssuePayload(body, url);
     });
-
-    if(!response.ok){
-        let detail = "";
-        try{
-            const errorData = await response.json();
-            detail = errorData && errorData.message ? ` — ${errorData.message}` : "";
-        }catch(_){}
-
-        if(response.status === 409){
-            throw new Error(
-                "CONFLITO: O transmissions.json MUDOU NO GITHUB. " +
-                "RECARREGUE A PÁGINA E TENTE NOVAMENTE."
-            );
-        }
-
-        if(response.status === 401 || response.status === 403){
-            throw new Error(
-                "TOKEN SEM AUTORIZAÇÃO PARA ESCREVER NESTE REPOSITÓRIO" + detail
-            );
-        }
-
-        throw new Error(`GITHUB RECUSOU A GRAVAÇÃO: HTTP ${response.status}${detail}`);
-    }
-
-    const result = await response.json();
-    githubFileSha = result.content && result.content.sha
-        ? result.content.sha
-        : current.sha;
-
-    return result;
-}
-
-function getAllTransmissions(){
-    return transmissions.concat(customTransmissions);
 }
 
 const NCS = {
@@ -1159,13 +562,9 @@ const NCS = {
 
         const id = document.getElementById("userId").value.trim();
         const code = document.getElementById("accessCode").value.trim();
-        const status = document.getElementById("status");
 
         if(!id || !code){
-            NCS.setStatus(
-                "> ERRO: ID E CÓDIGO SÃO OBRIGATÓRIOS.",
-                true
-            );
+            NCS.setStatus("> ERRO: ID E CÓDIGO SÃO OBRIGATÓRIOS.", true);
             return false;
         }
 
@@ -1173,28 +572,25 @@ const NCS = {
             return NCS.openAdmin();
         }
 
-        const result = getAllTransmissions().find(item =>
+        if(!remoteLoaded){
+            NCS.setStatus("> ERRO: BANCO DE TRANSMISSÕES INDISPONÍVEL.", true);
+            return false;
+        }
+
+        const result = allTransmissions.find(item =>
             item.id.trim().toLowerCase() === id.toLowerCase() &&
             item.code.trim().toLowerCase() === code.toLowerCase()
         );
 
         if(!result){
-            NCS.setStatus(
-                "> ACESSO NEGADO.\n> ID/CÓDIGO INVÁLIDO OU TRANSMISSÃO NÃO ENCONTRADA.",
-                true
-            );
+            NCS.setStatus("> ACESSO NEGADO.\n> ID/CÓDIGO INVÁLIDO OU TRANSMISSÃO NÃO ENCONTRADA.", true);
             return false;
         }
 
         NCS.setStatus("> AUTENTICAÇÃO VALIDADA.", false);
-
         document.getElementById("loginForm").classList.add("hidden");
-
-        const screen = document.getElementById("messageScreen");
-        screen.classList.add("active");
-
+        document.getElementById("messageScreen").classList.add("active");
         NCS.showMessage(result, id);
-
         return false;
     },
 
@@ -1202,46 +598,38 @@ const NCS = {
         document.getElementById("loginForm").classList.add("hidden");
         document.getElementById("messageScreen").classList.remove("active");
         document.getElementById("adminPanel").classList.add("active");
+
         NCS.setStatus("> MODO MESTRE ATIVADO.", false);
-        NCS.setAdminStatus("> LENDO transmissions.json NO GITHUB...", false);
+        NCS.setAdminStatus("> LENDO /transmissions.json...", false);
 
         const result = await loadRemoteTransmissions();
 
         if(result.ok){
-            if(result.missing){
-                NCS.setAdminStatus(
-                    "> transmissions.json AINDA NÃO EXISTE.\n" +
-                    "> A PRIMEIRA INSERÇÃO IRÁ CRIAR O ARQUIVO.",
-                    false
-                );
-            }else{
-                NCS.setAdminStatus(
-                    `> BANCO REMOTO CARREGADO.\n> ${customTransmissions.length} TRANSMISSÃO(ÕES) ENCONTRADA(S).`,
-                    false
-                );
-            }
+            NCS.setAdminStatus(
+                `> BANCO CARREGADO.\n> ${allTransmissions.length} TRANSMISSÃO(ÕES) ENCONTRADA(S).`,
+                false
+            );
         }else{
             NCS.setAdminStatus(
-                "> AVISO: NÃO FOI POSSÍVEL LER O BANCO REMOTO.\n" +
-                "> " + result.error.message,
+                "> AVISO: NÃO FOI POSSÍVEL LER /transmissions.json.\n> " + result.error.message,
                 true
             );
         }
 
         NCS.renderAdminList();
-        document.getElementById("githubToken").focus();
+        document.getElementById("adminInput").focus();
         return false;
     },
 
     parseTransmission(raw){
-        const text=raw.trim();
-        const id=text.match(/\bid\s*:\s*["']([\s\S]*?)["']\s*,/i);
-        const code=text.match(/\bcode\s*:\s*["']([\s\S]*?)["']\s*,/i);
-        const title=text.match(/\btitle\s*:\s*["']([\s\S]*?)["']\s*,/i);
-        const message=text.match(/\bmessage\s*:\s*`([\s\S]*?)`\s*(?:,\s*)?\}\s*[,;]?\s*$/i);
+        const text = raw.trim();
+        const id = text.match(/\\bid\\s*:\s*["']([\\s\\S]*?)["']\s*,/i);
+        const code = text.match(/\\bcode\\s*:\s*["']([\\s\\S]*?)["']\s*,/i);
+        const title = text.match(/\\btitle\\s*:\s*["']([\\s\\S]*?)["']\s*,/i);
+        const message = text.match(/\\bmessage\\s*:\s*`([\\s\\S]*?)`\s*(?:,\s*)?\}\s*[,;]?\s*$/i);
 
         if(!id || !code || !title || !message){
-            throw new Error("FORMATO INVÁLIDO. Use id, code, title e message; o texto da message deve ficar entre crases (`).");
+            throw new Error("FORMATO INVÁLIDO. Use id, code, title e message; a message deve ficar entre crases (`).");
         }
 
         return {
@@ -1253,77 +641,61 @@ const NCS = {
     },
 
     async addTransmission(){
-        const box=document.getElementById("adminInput");
-        const tokenBox=document.getElementById("githubToken");
-
-        githubToken = tokenBox ? tokenBox.value.trim() : "";
-
-        if(!githubToken){
-            NCS.setAdminStatus("> ERRO: INFORME O GITHUB TOKEN DO MESTRE.", true);
-            return;
-        }
-
+        const box = document.getElementById("adminInput");
         if(!box.value.trim()){
             NCS.setAdminStatus("> ERRO: COLE UMA TRANSMISSÃO NA TEXT-BOX.", true);
             return;
         }
 
         try{
-            const item=NCS.parseTransmission(box.value);
-
-            // Recarrega a versão mais recente antes de editar o banco.
-            const remote = await readRemoteFileForWrite();
-            customTransmissions = remote.data;
-
-            const index=customTransmissions.findIndex(existing =>
-                existing.id.toLowerCase()===item.id.toLowerCase() &&
-                existing.code.toLowerCase()===item.code.toLowerCase()
-            );
-
-            if(index>=0){
-                customTransmissions[index]=item;
-            }else{
-                customTransmissions.push(item);
-            }
-
-            await saveRemoteTransmissions(
-                index>=0
-                    ? `Update transmission ${item.id} // ${item.code}`
-                    : `Add transmission ${item.id} // ${item.code}`
-            );
-
-            box.value="";
-            NCS.setAdminStatus(
-                `> ${index>=0 ? "TRANSMISSÃO ATUALIZADA" : "TRANSMISSÃO INSERIDA"} NO GITHUB.\n` +
-                `> ID: ${item.id}\n> CÓDIGO: ${item.code}\n> ARQUIVO: transmissions.json`,
-                false
-            );
-            NCS.renderAdminList();
+            const item = NCS.parseTransmission(box.value);
+            publishViaGithubIssue("upsert", item);
+            box.value = "";
         }catch(error){
             NCS.setAdminStatus("> ERRO: " + error.message, true);
         }
     },
 
     clearAdminInput(){
-        document.getElementById("adminInput").value="";
+        document.getElementById("adminInput").value = "";
         NCS.setAdminStatus("> TEXT-BOX LIMPA.", false);
         document.getElementById("adminInput").focus();
     },
 
+    showIssuePayload(body, url){
+        const box = document.getElementById("issuePayload");
+        const link = document.getElementById("issueLink");
+        if(box) box.value = body;
+        if(link){
+            link.href = url;
+            link.classList.remove("hidden");
+        }
+    },
+
+    async copyIssuePayload(){
+        const box = document.getElementById("issuePayload");
+        if(!box || !box.value) return;
+        const ok = await copyText(box.value);
+        NCS.setAdminStatus(
+            ok ? "> PAYLOAD COPIADO." : "> NÃO FOI POSSÍVEL COPIAR AUTOMATICAMENTE. SELECIONE O TEXTO MANUALMENTE.",
+            !ok
+        );
+    },
+
     setAdminStatus(text,error){
-        const el=document.getElementById("adminStatus");
-        el.textContent=text;
-        el.className=error ? "status error" : "status ok";
+        const el = document.getElementById("adminStatus");
+        el.textContent = text;
+        el.className = error ? "status error" : "status ok";
     },
 
     renderAdminList(){
-        const list=document.getElementById("adminList");
-        if(customTransmissions.length===0){
-            list.innerHTML=`<div class="muted" style="padding:16px 0;">> NENHUMA TRANSMISSÃO ADICIONADA PELO MESTRE.</div>`;
+        const list = document.getElementById("adminList");
+        if(!allTransmissions.length){
+            list.innerHTML = `<div class="admin-note">> NENHUMA TRANSMISSÃO ENCONTRADA.</div>`;
             return;
         }
 
-        list.innerHTML=customTransmissions.map((item,index)=>`
+        list.innerHTML = allTransmissions.map((item,index) => `
             <div class="admin-item">
                 <div class="admin-item-info">[${index+1}] ${escapeHtml(item.id)} // ${escapeHtml(item.code)}
 TITLE: ${escapeHtml(item.title)}</div>
@@ -1332,75 +704,41 @@ TITLE: ${escapeHtml(item.title)}</div>
         `).join("");
     },
 
-    async deleteTransmission(index){
-        const item=customTransmissions[index];
+    deleteTransmission(index){
+        const item = allTransmissions[index];
         if(!item) return;
 
-        if(!window.confirm(`Excluir "${item.title}" (${item.id} // ${item.code}) do banco do GitHub?`)){
-            return;
-        }
-
-        const tokenBox=document.getElementById("githubToken");
-        githubToken = tokenBox ? tokenBox.value.trim() : "";
-
-        if(!githubToken){
-            NCS.setAdminStatus("> ERRO: INFORME O GITHUB TOKEN DO MESTRE.", true);
+        if(!window.confirm(`Preparar exclusão de "${item.title}" (${item.id} // ${item.code})?`)){
             return;
         }
 
         try{
-            const remote = await readRemoteFileForWrite();
-            customTransmissions = remote.data;
-
-            const remoteIndex = customTransmissions.findIndex(existing =>
-                existing.id.toLowerCase()===item.id.toLowerCase() &&
-                existing.code.toLowerCase()===item.code.toLowerCase()
-            );
-
-            if(remoteIndex < 0){
-                NCS.setAdminStatus(
-                    "> A TRANSMISSÃO JÁ NÃO EXISTE NO BANCO REMOTO.",
-                    true
-                );
-                NCS.renderAdminList();
-                return;
-            }
-
-            customTransmissions.splice(remoteIndex,1);
-
-            await saveRemoteTransmissions(
-                `Delete transmission ${item.id} // ${item.code}`
-            );
-
-            NCS.renderAdminList();
-            NCS.setAdminStatus(
-                `> TRANSMISSÃO EXCLUÍDA DO GITHUB.\n> ARQUIVO: transmissions.json`,
-                false
-            );
+            publishViaGithubIssue("delete", item);
         }catch(error){
-            NCS.setAdminStatus("> ERRO AO EXCLUIR: " + error.message, true);
+            NCS.setAdminStatus("> ERRO: " + error.message, true);
         }
     },
 
     exitAdmin(){
         document.getElementById("adminPanel").classList.remove("active");
         document.getElementById("loginForm").classList.remove("hidden");
-        document.getElementById("userId").value="";
-        document.getElementById("accessCode").value="";
-        const tokenBox=document.getElementById("githubToken");
-        if(tokenBox) tokenBox.value="";
-        githubToken="";
+        document.getElementById("userId").value = "";
+        document.getElementById("accessCode").value = "";
+        const payload = document.getElementById("issuePayload");
+        const link = document.getElementById("issueLink");
+        if(payload) payload.value = "";
+        if(link) link.classList.add("hidden");
         NCS.setStatus("> SESSÃO DE MESTRE ENCERRADA.", false);
         window.scrollTo({top:0,behavior:"smooth"});
     },
 
-    setStatus(text, error){
+    setStatus(text,error){
         const el = document.getElementById("status");
         el.textContent = text;
         el.className = error ? "status error" : "status ok";
     },
 
-    showMessage(transmission, operator){
+    showMessage(transmission,operator){
         const container = document.getElementById("messageContent");
         container.innerHTML = "";
 
@@ -1434,7 +772,7 @@ CLASSIFICATION: RESTRICTED
                 return;
             }
 
-            body.textContent = text.slice(0, index + 1);
+            body.textContent = text.slice(0,index + 1);
             index++;
 
             let speed = 11 + Math.random() * 13;
@@ -1445,14 +783,11 @@ CLASSIFICATION: RESTRICTED
             else if(char === ",") speed = 70;
             else if(char === ":") speed = 80;
 
-            window.setTimeout(type, speed);
+            window.setTimeout(type,speed);
         }
 
-        window.setTimeout(type, 250);
-
-        window.setTimeout(() => {
-            screenIntoViewSafe();
-        }, 100);
+        window.setTimeout(type,250);
+        window.setTimeout(screenIntoViewSafe,100);
     },
 
     logout(){
@@ -1460,27 +795,16 @@ CLASSIFICATION: RESTRICTED
         document.getElementById("loginForm").classList.remove("hidden");
         document.getElementById("userId").value = "";
         document.getElementById("accessCode").value = "";
-        NCS.setStatus("> SESSÃO ENCERRADA.", false);
-
-        window.scrollTo({
-            top:0,
-            behavior:"smooth"
-        });
-
-        window.setTimeout(() => {
-            document.getElementById("userId").focus();
-        }, 250);
+        NCS.setStatus("> SESSÃO ENCERRADA.",false);
+        window.scrollTo({top:0,behavior:"smooth"});
+        window.setTimeout(() => document.getElementById("userId").focus(),250);
     }
 };
 
 function screenIntoViewSafe(){
     const screen = document.getElementById("messageScreen");
-
     if(screen && screen.scrollIntoView){
-        screen.scrollIntoView({
-            behavior:"smooth",
-            block:"start"
-        });
+        screen.scrollIntoView({behavior:"smooth",block:"start"});
     }
 }
 
@@ -1494,20 +818,19 @@ function updateClock(){
 }
 
 updateClock();
-window.setInterval(updateClock, 1000);
+window.setInterval(updateClock,1000);
 
 window.addEventListener("DOMContentLoaded", async () => {
     const input = document.getElementById("userId");
     if(input) input.focus();
 
-    // Carrega o banco remoto em segundo plano para que qualquer visitante
-    // consiga autenticar nas transmissões publicadas no GitHub.
     const result = await loadRemoteTransmissions();
-
     if(!result.ok){
-        console.warn("NCS: banco remoto indisponível.", result.error);
+        NCS.setStatus("> AVISO: NÃO FOI POSSÍVEL CARREGAR transmissions.json.",true);
+        console.warn("NCS: banco remoto indisponível.",result.error);
     }
 });
+
 </script>
 </body>
 </html>
