@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>N.C.S. — NIGHT CITY SECURE</title>
+
+<style>
+:root{
+    --green:#00ff66;
+    --green2:#00b84a;
+    --dark:#001408;
+    --red:#ff3030;
+}
+
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html{
+    background:#000;
+    color-scheme:dark;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    min-height:100dvh;
+    background:#000;
+    color:var(--green);
+    font-family:Consolas,"Courier New",monospace;
+    text-shadow:0 0 6px rgba(0,255,102,.55);
+    overflow-x:hidden;
+}
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:100;
+    background:repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.025) 0,
+        rgba(255,255,255,.025) 2px,
+        transparent 3px,
+        transparent 5px
+    );
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:101;
+    background:radial-gradient(circle,transparent 50%,rgba(0,0,0,.72));
+}
+
+.page{
+    width:100%;
+    max-width:1000px;
+    min-height:100vh;
+    min-height:100dvh;
+    margin:0 auto;
+    padding:12px;
+    position:relative;
+}
+
+.terminal{
+    min-height:calc(100vh - 24px);
+    min-height:calc(100dvh - 24px);
+    border:1px solid rgba(0,255,102,.38);
+    background:rgba(0,0,0,.94);
+    padding:clamp(14px,4vw,28px);
+    position:relative;
+    z-index:2;
+}
+
+.header{
+    white-space:pre-wrap;
+    font-size:clamp(12px,3vw,18px);
+    line-height:1.5;
+    margin-bottom:28px;
+}
+
+.login{
+    width:100%;
+    max-width:680px;
+    margin:0 auto;
+}
+
+.prompt{
+    margin:17px 0 7px;
+    font-size:clamp(13px,3.5vw,17px);
+    line-height:1.4;
+}
+
+.prompt::before{
+    content:"> ";
+}
+
+.field{
+    display:block;
+    width:100%;
+    min-height:48px;
+    padding:12px 14px;
+    border:1px solid var(--green2);
+    border-radius:0;
+    outline:none;
+    appearance:none;
+    -webkit-appearance:none;
+    background:#000;
+    color:var(--green);
+    font:inherit;
+    font-size:16px;
+    line-height:1.2;
+    box-shadow:inset 0 0 12px rgba(0,255,102,.04);
+    text-shadow:0 0 6px rgba(0,255,102,.6);
+}
+
+.field:focus{
+    border-color:var(--green);
+    box-shadow:0 0 14px rgba(0,255,102,.15);
+}
+
+.button,
+.small-button{
+    display:block;
+    width:100%;
+    min-height:48px;
+    border:1px solid var(--green2);
+    border-radius:0;
+    background:var(--dark);
+    color:var(--green);
+    font:inherit;
+    font-size:16px;
+    font-weight:bold;
+    letter-spacing:1px;
+    cursor:pointer;
+    touch-action:manipulation;
+    user-select:none;
+    -webkit-user-select:none;
+    text-shadow:0 0 6px rgba(0,255,102,.6);
+}
+
+.button{
+    margin-top:18px;
+}
+
+.button:active,
+.small-button:active{
+    background:#073d1c;
+    transform:translateY(1px);
+}
+
+.button:disabled,
+.small-button:disabled{
+    opacity:.45;
+    cursor:default;
+}
+
+.status{
+    min-height:26px;
+    margin-top:18px;
+    white-space:pre-wrap;
+    line-height:1.5;
+    font-size:14px;
+}
+
+.error{
+    color:var(--red);
+    text-shadow:0 0 7px rgba(255,0,0,.7);
+}
+
+.ok{
+    color:var(--green);
+}
+
+.message{
+    display:none;
+    white-space:pre-wrap;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    line-height:1.6;
+    font-size:clamp(14px,3.7vw,19px);
+    padding-bottom:40px;
+}
+
+.message.active{
+    display:block;
+}
+
+.message-header{
+    margin-bottom:24px;
+}
+
+.actions{
+    margin-top:30px;
+}
+
+.admin-panel{display:none;width:100%;max-width:900px;margin:0 auto;padding-bottom:40px;}
+.admin-panel.active{display:block;}
+.admin-title{margin-bottom:20px;line-height:1.5;font-size:clamp(14px,3.8vw,20px);white-space:pre-wrap;}
+.admin-box{display:block;width:100%;min-height:300px;padding:14px;resize:vertical;border:1px solid var(--green2);border-radius:0;outline:none;background:#000;color:var(--green);font:inherit;font-size:15px;line-height:1.5;text-shadow:0 0 5px rgba(0,255,102,.45);}
+.admin-box:focus{border-color:var(--green);box-shadow:0 0 14px rgba(0,255,102,.12);}
+.admin-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;}
+.admin-list{margin-top:25px;border-top:1px solid rgba(0,255,102,.25);}
+.admin-item{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:13px 0;border-bottom:1px solid rgba(0,255,102,.18);}
+.admin-item-info{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45;}
+.admin-delete{flex:0 0 auto;width:auto;min-height:42px;padding:8px 12px;color:var(--red);border-color:#8b2020;background:#150000;}
+.admin-note{margin:16px 0 0;color:#087c36;font-size:12px;line-height:1.5;white-space:pre-wrap;}
+@media (max-width:600px){.admin-box{min-height:360px;font-size:14px}.admin-actions{grid-template-columns:1fr}.admin-item{flex-direction:column}.admin-delete{width:100%;}}
+
+.cursor{
+    display:inline-block;
+    width:9px;
+    height:1.05em;
+    margin-left:2px;
+    vertical-align:-.1em;
+    background:var(--green);
+    animation:blink .8s infinite;
+}
+
+@keyframes blink{
+    50%{opacity:0}
+}
+
+.footer{
+    margin-top:42px;
+    color:#087c36;
+    font-size:11px;
+    line-height:1.5;
+}
+
+.hidden{
+    display:none !important;
+}
+
+@media (max-width:600px){
+    .page{
+        padding:8px;
+    }
+
+    .terminal{
+        min-height:calc(100vh - 16px);
+        min-height:calc(100dvh - 16px);
+        padding:14px;
+    }
+
+    .header{
+        font-size:12px;
+    }
+
+    .field,
+    .button,
+    .small-button{
+        min-height:50px;
+    }
+}
+
+@media (prefers-reduced-motion:reduce){
+    *{
+        scroll-behavior:auto !important;
+    }
+
+    .cursor{
+        animation:none;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+<main class="terminal">
+
+    <div id="header" class="header">N.C.S. — NIGHT CITY SECURE
+
+NIGHT CITY SECURE v1.1
+LOCAL TERMINAL // ACCESS NODE
+
+INITIALIZING...
+VERIFYING NETWORK...
+WAITING FOR OPERATOR...<span class="cursor"></span></div>
+    
+    <form id="loginForm" class="login" onsubmit="return NCS.login(event);">
+        <div class="prompt">IDENTIFICAÇÃO DO OPERADOR</div>
+        <input
+            id="userId"
+            class="field"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            placeholder="Digite seu ID"
+        >
+
+        <div class="prompt">CÓDIGO DE AUTORIZAÇÃO</div>
+        <input
+            id="accessCode"
+            class="field"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Digite o código"
+        >
+
+          <button type="submit" class="button">[ INICIAR SESSÃO ]</button>
+
+        <div id="status" class="status" aria-live="polite"></div>
+    </form>
+
+    <section id="messageScreen" class="message" aria-live="polite">
+        <div id="messageContent"></div>
+
+        <div class="actions">
+            <button type="button" id="skipTypingButton" class="small-button" onclick="NCS.skipTyping()">
+                [ PULAR ANIMAÇÃO ]
+            </button>
+            <button type="button" class="small-button" onclick="NCS.logout()">
+                [ ENCERRAR SESSÃO ]
+            </button>
+        </div>
+    </section>
+
+    <!-- MODO MESTRE: acesso por ID Izaac + código 78Boss -->
+    <section id="adminPanel" class="admin-panel" aria-live="polite">
+        <div class="admin-title">N.C.S. // MASTER ADMIN TERMINAL
+
+ADMINISTRATOR ACCESS GRANTED
+
+> BANCO REMOTO: /transmissions.json
+> O TOKEN DO GITHUB É USADO SOMENTE NESTA SESSÃO.
+> ELE NÃO É SALVO NO NAVEGADOR.</div>
+
+        <div class="prompt">GITHUB TOKEN DO MESTRE</div>
+        <input
+            id="githubToken"
+            class="field"
+            type="password"
+            autocomplete="new-password"
+            spellcheck="false"
+            placeholder="Cole aqui seu github_pat_..."
+        >
+
+        <div class="admin-note">O token é solicitado nesta tela para não precisar ficar escrito no código.
+Ele permanece apenas em memória enquanto o Modo Mestre estiver aberto e é apagado ao sair.
+O token precisa ter acesso ao repositório do N.C.S. com Contents: Read and write.</div>
+
+        <textarea id="adminInput" class="admin-box" spellcheck="false" autocomplete="off" placeholder='Exemplo:
+
+{
+    id: "Mestre",
+    code: "Sessão-1",
+    title: "NCS // SESSION RECORD",
+    message: `
+SUA MENSAGEM AQUI.
+`
+},'></textarea>
+
+        <div class="admin-actions">
+            <button type="button" class="button" onclick="NCS.addTransmission()">[ SALVAR TRANSMISSÃO ]</button>
+            <button type="button" class="button" onclick="NCS.clearAdminInput()">[ LIMPAR TEXT-BOX ]</button>
+        </div>
+
+        <div id="adminStatus" class="status" aria-live="polite"></div>
+
+        <div class="admin-note">O salvamento é feito diretamente pela API do GitHub.
+A transmissão é adicionada ou atualizada em /transmissions.json e um commit é criado automaticamente.</div>
+
+        <div id="adminList" class="admin-list"></div>
+
+        <div class="actions">
+            <button type="button" class="small-button" onclick="NCS.exitAdmin()">[ SAIR DO MODO MESTRE ]</button>
+        </div>
+    </section>
+
+    <div class="footer">
+        N.C.S. // NIGHT CITY SECURE<br>
+        CONNECTION: LOCAL // ENCRYPTION: SIMULATED<br>
+        <span id="clock"></span>
+    </div>
+</main>
+</div>
+
+<script>
+const NCS_ADMIN_ID = "Izaac";
+const NCS_ADMIN_CODE = "78Boss";
+
+/*
+ * CONFIGURAÇÃO DO GITHUB
+ *
+ * Você pode deixar OWNER e REPO vazios para o sistema tentar descobrir
+ * automaticamente pelo endereço usuario.github.io/repositorio/
+ *
+ * Se usar domínio próprio ou quiser evitar qualquer dúvida, preencha:
+ *   NCS_GITHUB_OWNER = "SeuUsuario"
+ *   NCS_GITHUB_REPO  = "SeuRepositorio"
+ *
+ * O token NÃO fica aqui. Ele é digitado no Modo Mestre e permanece
+ * somente em memória durante a sessão.
+ */
+const NCS_GITHUB_OWNER = "";
+const NCS_GITHUB_REPO = "";
+const NCS_GITHUB_BRANCH = "main";
+const NCS_GITHUB_PATH = "transmissions.json";
+
+let allTransmissions = [];
+let remoteLoaded = false;
+let typingTimer = null;
+let typingState = null;
+let githubToken = "";
+
+function isValidTransmission(item){
+    return item &&
+        typeof item.id === "string" &&
+        typeof item.code === "string" &&
+        typeof item.title === "string" &&
+        typeof item.message === "string" &&
+        item.id.trim() !== "" &&
+        item.code.trim() !== "";
+}
+
+function detectGithubConfig(){
+    const host = window.location.hostname;
+    const path = window.location.pathname;
+
+    let owner = NCS_GITHUB_OWNER.trim();
+    let repo = NCS_GITHUB_REPO.trim();
+
+    if(!owner && host.endsWith(".github.io")){
+        owner = host.split(".")[0];
+    }
+
+    if(!repo && host.endsWith(".github.io")){
+        const segments = path.split("/").filter(Boolean);
+
+        if(segments.length > 0){
+            repo = segments[0];
+        }else if(owner){
+            repo = owner + ".github.io";
+        }
+    }
+
+    return {
+        owner,
+        repo,
+        branch: NCS_GITHUB_BRANCH,
+        path: NCS_GITHUB_PATH
+    };
+}
+
+function getGithubApiUrl(){
+    const cfg = detectGithubConfig();
+
+    if(!cfg.owner || !cfg.repo){
+        throw new Error(
+            "NÃO FOI POSSÍVEL IDENTIFICAR O REPOSITÓRIO. " +
+            "PREENCHA NCS_GITHUB_OWNER E NCS_GITHUB_REPO NO CÓDIGO."
+        );
+    }
+
+    return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.path}`;
+}
+
+function base64ToUtf8(base64){
+    const binary = atob(base64.replace(/\n/g, ""));
+    const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+    return new TextDecoder("utf-8").decode(bytes);
+}
+
+function utf8ToBase64(text){
+    const bytes = new TextEncoder().encode(text);
+    let binary = "";
+
+    const chunkSize = 0x8000;
+
+    for(let i = 0; i < bytes.length; i += chunkSize){
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+
+    return btoa(binary);
+}
+
+async function loadRemoteTransmissions(){
+    try{
+        const response = await fetch(
+            `${NCS_GITHUB_PATH}?t=${Date.now()}`,
+            {
+                method:"GET",
+                headers:{
+                    "Accept":"application/json"
+                },
+                cache:"no-store"
+            }
+        );
+
+        if(!response.ok){
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const parsed = await response.json();
+
+        if(!Array.isArray(parsed)){
+            throw new Error("transmissions.json DEVE CONTER UM ARRAY JSON.");
+        }
+
+        allTransmissions = parsed.filter(isValidTransmission);
+        remoteLoaded = true;
+
+        return {ok:true};
+    }catch(error){
+        allTransmissions = [];
+        remoteLoaded = false;
+        return {ok:false,error};
+    }
+}
+
+async function readGithubFileForWrite(){
+    const apiUrl = getGithubApiUrl();
+    const cfg = detectGithubConfig();
+
+    const response = await fetch(
+        `${apiUrl}?ref=${encodeURIComponent(cfg.branch)}&t=${Date.now()}`,
+        {
+            method:"GET",
+            headers:{
+                "Accept":"application/vnd.github+json"
+            },
+            cache:"no-store"
+        }
+    );
+
+    if(response.status === 404){
+        return {
+            sha:null,
+            data:[]
+        };
+    }
+
+    if(!response.ok){
+        throw new Error(`FALHA AO LER transmissions.json NO GITHUB: HTTP ${response.status}`);
+    }
+
+    const payload = await response.json();
+
+    if(!payload.content){
+        throw new Error("O GITHUB NÃO RETORNOU O CONTEÚDO DE transmissions.json.");
+    }
+
+    const decoded = base64ToUtf8(payload.content);
+
+    let parsed = [];
+
+    if(decoded.trim()){
+        parsed = JSON.parse(decoded);
+    }
+
+    if(!Array.isArray(parsed)){
+        throw new Error("O CONTEÚDO ATUAL DE transmissions.json NÃO É UM ARRAY.");
+    }
+
+    return {
+        sha:payload.sha || null,
+        data:parsed.filter(isValidTransmission)
+    };
+}
+
+async function saveRemoteTransmissions(data, commitMessage, sha){
+    if(!githubToken){
+        throw new Error("INFORME O GITHUB TOKEN DO MESTRE.");
+    }
+
+    const cfg = detectGithubConfig();
+
+    const response = await fetch(getGithubApiUrl(), {
+        method:"PUT",
+        headers:{
+            "Accept":"application/vnd.github+json",
+            "Content-Type":"application/json",
+            "Authorization":`Bearer ${githubToken}`
+        },
+        body:JSON.stringify({
+            message:commitMessage,
+            content:utf8ToBase64(JSON.stringify(data, null, 2) + "\n"),
+            branch:cfg.branch,
+            ...(sha ? {sha} : {})
+        })
+    });
+
+    if(!response.ok){
+        let detail = "";
+
+        try{
+            const errorData = await response.json();
+            if(errorData && errorData.message){
+                detail = ` — ${errorData.message}`;
+            }
+        }catch(_){}
+
+        if(response.status === 401){
+            throw new Error(
+                "TOKEN INVÁLIDO OU EXPIRADO. VERIFIQUE O GITHUB TOKEN."
+            );
+        }
+
+        if(response.status === 403){
+            throw new Error(
+                "TOKEN SEM PERMISSÃO PARA ESCREVER NO REPOSITÓRIO." + detail
+            );
+        }
+
+        if(response.status === 409){
+            throw new Error(
+                "CONFLITO: transmissions.json MUDOU NO GITHUB. " +
+                "RECARREGUE A PÁGINA E TENTE NOVAMENTE."
+            );
+        }
+
+        throw new Error(
+            `GITHUB RECUSOU A GRAVAÇÃO: HTTP ${response.status}${detail}`
+        );
+    }
+
+    return response.json();
+}
+
+const NCS = {
+    login(event){
+        if(event){
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        const id = document.getElementById("userId").value.trim();
+        const code = document.getElementById("accessCode").value.trim();
+
+        if(!id || !code){
+            NCS.setStatus("> ERRO: ID E CÓDIGO SÃO OBRIGATÓRIOS.", true);
+            return false;
+        }
+
+        if(id.toLowerCase() === NCS_ADMIN_ID.toLowerCase() && code === NCS_ADMIN_CODE){
+            return NCS.openAdmin();
+        }
+
+        if(!remoteLoaded){
+            NCS.setStatus("> ERRO: BANCO DE TRANSMISSÕES INDISPONÍVEL.", true);
+            return false;
+        }
+
+        const result = allTransmissions.find(item =>
+            item.id.trim().toLowerCase() === id.toLowerCase() &&
+            item.code.trim().toLowerCase() === code.toLowerCase()
+        );
+
+        if(!result){
+            NCS.setStatus("> ACESSO NEGADO.\n> ID/CÓDIGO INVÁLIDO OU TRANSMISSÃO NÃO ENCONTRADA.", true);
+            return false;
+        }
+
+        NCS.setStatus("> AUTENTICAÇÃO VALIDADA.", false);
+        document.getElementById("loginForm").classList.add("hidden");
+        document.getElementById("messageScreen").classList.add("active");
+        NCS.showMessage(result, id);
+        return false;
+    },
+
+    async openAdmin(){
+        document.getElementById("loginForm").classList.add("hidden");
+        document.getElementById("messageScreen").classList.remove("active");
+        document.getElementById("adminPanel").classList.add("active");
+
+        NCS.setStatus("> MODO MESTRE ATIVADO.", false);
+        NCS.setAdminStatus("> LENDO /transmissions.json...", false);
+
+        const tokenBox = document.getElementById("githubToken");
+        if(tokenBox){
+            tokenBox.value = "";
+        }
+        githubToken = "";
+
+        const result = await loadRemoteTransmissions();
+
+        if(result.ok){
+            NCS.setAdminStatus(
+                `> BANCO CARREGADO.\n> ${allTransmissions.length} TRANSMISSÃO(ÕES) ENCONTRADA(S).`,
+                false
+            );
+        }else{
+            NCS.setAdminStatus(
+                "> AVISO: NÃO FOI POSSÍVEL LER /transmissions.json.\n> " +
+                result.error.message,
+                true
+            );
+        }
+
+        NCS.renderAdminList();
+
+        if(tokenBox){
+            tokenBox.focus();
+        }
+
+        return false;
+    },
+
+    parseTransmission(raw){
+        const text = raw.trim();
+
+        // Aceita o formato JavaScript usado pelo campo do Modo Mestre:
+        // { id: "...", code: "...", title: "...", message: `...` }
+        const id = text.match(/\bid\s*:\s*["']([\s\S]*?)["']\s*,/i);
+        const code = text.match(/\bcode\s*:\s*["']([\s\S]*?)["']\s*,/i);
+        const title = text.match(/\btitle\s*:\s*["']([\s\S]*?)["']\s*,/i);
+        const message = text.match(/\bmessage\s*:\s*`([\s\S]*?)`\s*(?:,\s*)?}\s*[,;]?\s*$/i);
+
+        if(!id || !code || !title || !message){
+            throw new Error(
+                "FORMATO INVÁLIDO. Use id, code, title e message; a message deve ficar entre crases (`)."
+            );
+        }
+
+        return {
+            id: id[1].trim(),
+            code: code[1].trim(),
+            title: title[1].trim(),
+            message: message[1]
+        };
+    },
+
+    async addTransmission(){
+        const box = document.getElementById("adminInput");
+        const tokenBox = document.getElementById("githubToken");
+
+        githubToken = tokenBox ? tokenBox.value.trim() : "";
+
+        if(!githubToken){
+            NCS.setAdminStatus(
+                "> ERRO: INFORME O GITHUB TOKEN DO MESTRE.",
+                true
+            );
+            if(tokenBox) tokenBox.focus();
+            return;
+        }
+
+        if(!box.value.trim()){
+            NCS.setAdminStatus(
+                "> ERRO: COLE UMA TRANSMISSÃO NA TEXT-BOX.",
+                true
+            );
+            box.focus();
+            return;
+        }
+
+        try{
+            const item = NCS.parseTransmission(box.value);
+
+            NCS.setAdminStatus(
+                "> LENDO A VERSÃO MAIS RECENTE DO GITHUB...",
+                false
+            );
+
+            const remote = await readGithubFileForWrite();
+            const data = remote.data;
+
+            const index = data.findIndex(existing =>
+                existing.id.toLowerCase() === item.id.toLowerCase() &&
+                existing.code.toLowerCase() === item.code.toLowerCase()
+            );
+
+            if(index >= 0){
+                data[index] = item;
+            }else{
+                data.push(item);
+            }
+
+            await saveRemoteTransmissions(
+                data,
+                index >= 0
+                    ? `NCS: Update transmission ${item.id} // ${item.code}`
+                    : `NCS: Add transmission ${item.id} // ${item.code}`,
+                remote.sha
+            );
+
+            allTransmissions = data;
+            remoteLoaded = true;
+
+            box.value = "";
+
+            NCS.setAdminStatus(
+                `> ${index >= 0 ? "TRANSMISSÃO ATUALIZADA" : "TRANSMISSÃO INSERIDA"} COM SUCESSO.\n` +
+                `> ID: ${item.id}\n` +
+                `> CÓDIGO: ${item.code}\n` +
+                `> ARQUIVO: /transmissions.json`,
+                false
+            );
+
+            NCS.renderAdminList();
+
+        }catch(error){
+            NCS.setAdminStatus(
+                "> ERRO: " + error.message,
+                true
+            );
+        }
+    },
+
+    clearAdminInput(){
+        document.getElementById("adminInput").value = "";
+        NCS.setAdminStatus("> TEXT-BOX LIMPA.", false);
+        document.getElementById("adminInput").focus();
+    },
+
+    setAdminStatus(text,error){
+        const el = document.getElementById("adminStatus");
+        el.textContent = text;
+        el.className = error ? "status error" : "status ok";
+    },
+
+    renderAdminList(){
+        const list = document.getElementById("adminList");
+        if(!allTransmissions.length){
+            list.innerHTML = `<div class="admin-note">> NENHUMA TRANSMISSÃO ENCONTRADA.</div>`;
+            return;
+        }
+
+        list.innerHTML = allTransmissions.map((item,index) => `
+            <div class="admin-item">
+                <div class="admin-item-info">[${index+1}] ${escapeHtml(item.id)} // ${escapeHtml(item.code)}
+TITLE: ${escapeHtml(item.title)}</div>
+                <button type="button" class="small-button admin-delete" onclick="NCS.deleteTransmission(${index})">[ EXCLUIR ]</button>
+            </div>
+        `).join("");
+    },
+
+    async deleteTransmission(index){
+        const item = allTransmissions[index];
+        if(!item) return;
+
+        if(!window.confirm(
+            `Excluir "${item.title}" (${item.id} // ${item.code}) do banco do GitHub?`
+        )){
+            return;
+        }
+
+        const tokenBox = document.getElementById("githubToken");
+        githubToken = tokenBox ? tokenBox.value.trim() : "";
+
+        if(!githubToken){
+            NCS.setAdminStatus(
+                "> ERRO: INFORME O GITHUB TOKEN DO MESTRE.",
+                true
+            );
+            if(tokenBox) tokenBox.focus();
+            return;
+        }
+
+        try{
+            NCS.setAdminStatus(
+                "> LENDO A VERSÃO MAIS RECENTE DO GITHUB...",
+                false
+            );
+
+            const remote = await readGithubFileForWrite();
+            const data = remote.data;
+
+            const remoteIndex = data.findIndex(existing =>
+                existing.id.toLowerCase() === item.id.toLowerCase() &&
+                existing.code.toLowerCase() === item.code.toLowerCase()
+            );
+
+            if(remoteIndex < 0){
+                NCS.setAdminStatus(
+                    "> A TRANSMISSÃO JÁ NÃO EXISTE NO BANCO REMOTO.",
+                    true
+                );
+                allTransmissions = data;
+                NCS.renderAdminList();
+                return;
+            }
+
+            const removed = data[remoteIndex];
+            data.splice(remoteIndex, 1);
+
+            await saveRemoteTransmissions(
+                data,
+                `NCS: Delete transmission ${removed.id} // ${removed.code}`,
+                remote.sha
+            );
+
+            allTransmissions = data;
+            remoteLoaded = true;
+
+            NCS.renderAdminList();
+
+            NCS.setAdminStatus(
+                `> TRANSMISSÃO EXCLUÍDA COM SUCESSO.\n> ID: ${removed.id}\n> CÓDIGO: ${removed.code}`,
+                false
+            );
+
+        }catch(error){
+            NCS.setAdminStatus(
+                "> ERRO AO EXCLUIR: " + error.message,
+                true
+            );
+        }
+    },
+
+    exitAdmin(){
+        document.getElementById("adminPanel").classList.remove("active");
+        document.getElementById("loginForm").classList.remove("hidden");
+        document.getElementById("userId").value = "";
+        document.getElementById("accessCode").value = "";
+
+        const tokenBox = document.getElementById("githubToken");
+        if(tokenBox){
+            tokenBox.value = "";
+        }
+
+        githubToken = "";
+
+        NCS.setStatus("> SESSÃO DE MESTRE ENCERRADA.", false);
+
+        window.scrollTo({
+            top:0,
+            behavior:"smooth"
+        });
+
+        window.setTimeout(() => {
+            document.getElementById("userId").focus();
+        },250);
+    },
+
+    setStatus(text,error){
+        const el = document.getElementById("status");
+        el.textContent = text;
+        el.className = error ? "status error" : "status ok";
+    },
+
+    showMessage(transmission,operator){
+        const container = document.getElementById("messageContent");
+        container.innerHTML = "";
+
+        if(typingTimer){
+            window.clearTimeout(typingTimer);
+            typingTimer = null;
+        }
+        typingState = null;
+
+        const header = document.createElement("div");
+        header.className = "message-header";
+        header.textContent =
+`N.C.S. // ACCESS GRANTED
+
+TRANSMISSION: ${transmission.title}
+OPERATOR: ${operator}
+CLASSIFICATION: RESTRICTED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
+
+        const body = document.createElement("div");
+        const cursor = document.createElement("span");
+        cursor.className = "cursor";
+
+        container.appendChild(header);
+        container.appendChild(body);
+        container.appendChild(cursor);
+
+        const skipButton = document.getElementById("skipTypingButton");
+        if(skipButton){
+            skipButton.style.display = "block";
+            skipButton.disabled = false;
+            skipButton.textContent = "[ PULAR ANIMAÇÃO ]";
+        }
+
+        const text = transmission.message;
+        let index = 0;
+
+        typingState = {
+            text,
+            body,
+            cursor,
+            index: 0,
+            done: false
+        };
+
+        const finishTyping = () => {
+            body.textContent = text;
+            if(cursor.isConnected) cursor.remove();
+            typingState.done = true;
+            if(skipButton){
+                skipButton.disabled = true;
+                skipButton.textContent = "[ ANIMAÇÃO CONCLUÍDA ]";
+            }
+            typingTimer = null;
+        };
+
+        function type(){
+            if(!typingState || typingState.done) return;
+
+            if(index >= text.length){
+                finishTyping();
+                return;
+            }
+
+            body.textContent = text.slice(0,index + 1);
+            index++;
+            typingState.index = index;
+
+            let speed = 11 + Math.random() * 13;
+            const char = text.charAt(index - 1);
+
+            if(char === "\n") speed = 48;
+            else if(char === ".") speed = 95;
+            else if(char === ",") speed = 70;
+            else if(char === ":") speed = 80;
+
+            typingTimer = window.setTimeout(type,speed);
+        }
+
+        // Exposto para o botão PULAR ANIMAÇÃO.
+        typingState.finish = finishTyping;
+
+        typingTimer = window.setTimeout(type,250);
+        window.setTimeout(screenIntoViewSafe,100);
+    },
+
+    skipTyping(){
+        if(!typingState || typingState.done){
+            return;
+        }
+
+        if(typingTimer){
+            window.clearTimeout(typingTimer);
+            typingTimer = null;
+        }
+
+        typingState.finish();
+    },
+
+    logout(){
+        if(typingTimer){
+            window.clearTimeout(typingTimer);
+            typingTimer = null;
+        }
+        typingState = null;
+        document.getElementById("messageScreen").classList.remove("active");
+        document.getElementById("loginForm").classList.remove("hidden");
+        document.getElementById("userId").value = "";
+        document.getElementById("accessCode").value = "";
+        NCS.setStatus("> SESSÃO ENCERRADA.",false);
+        window.scrollTo({top:0,behavior:"smooth"});
+        window.setTimeout(() => document.getElementById("userId").focus(),250);
+    }
+};
+
+function screenIntoViewSafe(){
+    const screen = document.getElementById("messageScreen");
+    if(screen && screen.scrollIntoView){
+        screen.scrollIntoView({behavior:"smooth",block:"start"});
+    }
+}
+
+function updateClock(){
+    const now = new Date();
+    document.getElementById("clock").textContent =
+        "SYSTEM CLOCK: " +
+        now.toLocaleDateString("pt-BR") +
+        " // " +
+        now.toLocaleTimeString("pt-BR");
+}
+
+updateClock();
+window.setInterval(updateClock,1000);
+
+window.addEventListener("DOMContentLoaded", async () => {
+    const input = document.getElementById("userId");
+    if(input) input.focus();
+
+    const result = await loadRemoteTransmissions();
+    if(!result.ok){
+        NCS.setStatus("> AVISO: NÃO FOI POSSÍVEL CARREGAR transmissions.json.",true);
+        console.warn("NCS: banco remoto indisponível.",result.error);
+    }
+});
+
+</script>
+</body>
+</html>
+
