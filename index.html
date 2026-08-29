@@ -415,6 +415,15 @@ let typingTimer = null;
 let typingState = null;
 let githubToken = "";
 
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 function isValidTransmission(item){
     return item &&
         typeof item.id === "string" &&
