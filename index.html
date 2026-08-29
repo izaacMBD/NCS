@@ -156,6 +156,12 @@ body::after{
     transform:translateY(1px);
 }
 
+.button:disabled,
+.small-button:disabled{
+    opacity:.45;
+    cursor:default;
+}
+
 .status{
     min-height:26px;
     margin-top:18px;
@@ -312,6 +318,9 @@ WAITING FOR OPERATOR...<span class="cursor"></span></div>
         <div id="messageContent"></div>
 
         <div class="actions">
+            <button type="button" id="skipTypingButton" class="small-button" onclick="NCS.skipTyping()">
+                [ PULAR ANIMAÇÃO ]
+            </button>
             <button type="button" class="small-button" onclick="NCS.logout()">
                 [ ENCERRAR SESSÃO ]
             </button>
@@ -396,6 +405,8 @@ const NCS_TRANSMISSIONS_PATH = "./transmissions.json";
 
 let allTransmissions = [];
 let remoteLoaded = false;
+let typingTimer = null;
+let typingState = null;
 
 function isValidTransmission(item){
     return item &&
@@ -623,20 +634,25 @@ const NCS = {
 
     parseTransmission(raw){
         const text = raw.trim();
-        const id = text.match(/\\bid\\s*:\s*["']([\\s\\S]*?)["']\s*,/i);
-        const code = text.match(/\\bcode\\s*:\s*["']([\\s\\S]*?)["']\s*,/i);
-        const title = text.match(/\\btitle\\s*:\s*["']([\\s\\S]*?)["']\s*,/i);
-        const message = text.match(/\\bmessage\\s*:\s*`([\\s\\S]*?)`\s*(?:,\s*)?\}\s*[,;]?\s*$/i);
+
+        // Aceita o formato JavaScript usado pelo campo do Modo Mestre:
+        // { id: "...", code: "...", title: "...", message: `...` }
+        const id = text.match(/\bid\s*:\s*["']([\s\S]*?)["']\s*,/i);
+        const code = text.match(/\bcode\s*:\s*["']([\s\S]*?)["']\s*,/i);
+        const title = text.match(/\btitle\s*:\s*["']([\s\S]*?)["']\s*,/i);
+        const message = text.match(/\bmessage\s*:\s*`([\s\S]*?)`\s*(?:,\s*)?}\s*[,;]?\s*$/i);
 
         if(!id || !code || !title || !message){
-            throw new Error("FORMATO INVÁLIDO. Use id, code, title e message; a message deve ficar entre crases (`).");
+            throw new Error(
+                "FORMATO INVÁLIDO. Use id, code, title e message; a message deve ficar entre crases (`)."
+            );
         }
 
         return {
-            id:id[1].trim(),
-            code:code[1].trim(),
-            title:title[1].trim(),
-            message:message[1]
+            id: id[1].trim(),
+            code: code[1].trim(),
+            title: title[1].trim(),
+            message: message[1]
         };
     },
 
@@ -742,6 +758,12 @@ TITLE: ${escapeHtml(item.title)}</div>
         const container = document.getElementById("messageContent");
         container.innerHTML = "";
 
+        if(typingTimer){
+            window.clearTimeout(typingTimer);
+            typingTimer = null;
+        }
+        typingState = null;
+
         const header = document.createElement("div");
         header.className = "message-header";
         header.textContent =
@@ -763,17 +785,46 @@ CLASSIFICATION: RESTRICTED
         container.appendChild(body);
         container.appendChild(cursor);
 
-        let index = 0;
+        const skipButton = document.getElementById("skipTypingButton");
+        if(skipButton){
+            skipButton.style.display = "block";
+            skipButton.disabled = false;
+            skipButton.textContent = "[ PULAR ANIMAÇÃO ]";
+        }
+
         const text = transmission.message;
+        let index = 0;
+
+        typingState = {
+            text,
+            body,
+            cursor,
+            index: 0,
+            done: false
+        };
+
+        const finishTyping = () => {
+            body.textContent = text;
+            if(cursor.isConnected) cursor.remove();
+            typingState.done = true;
+            if(skipButton){
+                skipButton.disabled = true;
+                skipButton.textContent = "[ ANIMAÇÃO CONCLUÍDA ]";
+            }
+            typingTimer = null;
+        };
 
         function type(){
+            if(!typingState || typingState.done) return;
+
             if(index >= text.length){
-                cursor.remove();
+                finishTyping();
                 return;
             }
 
             body.textContent = text.slice(0,index + 1);
             index++;
+            typingState.index = index;
 
             let speed = 11 + Math.random() * 13;
             const char = text.charAt(index - 1);
@@ -783,14 +834,35 @@ CLASSIFICATION: RESTRICTED
             else if(char === ",") speed = 70;
             else if(char === ":") speed = 80;
 
-            window.setTimeout(type,speed);
+            typingTimer = window.setTimeout(type,speed);
         }
 
-        window.setTimeout(type,250);
+        // Exposto para o botão PULAR ANIMAÇÃO.
+        typingState.finish = finishTyping;
+
+        typingTimer = window.setTimeout(type,250);
         window.setTimeout(screenIntoViewSafe,100);
     },
 
+    skipTyping(){
+        if(!typingState || typingState.done){
+            return;
+        }
+
+        if(typingTimer){
+            window.clearTimeout(typingTimer);
+            typingTimer = null;
+        }
+
+        typingState.finish();
+    },
+
     logout(){
+        if(typingTimer){
+            window.clearTimeout(typingTimer);
+            typingTimer = null;
+        }
+        typingState = null;
         document.getElementById("messageScreen").classList.remove("active");
         document.getElementById("loginForm").classList.remove("hidden");
         document.getElementById("userId").value = "";
@@ -834,5 +906,4 @@ window.addEventListener("DOMContentLoaded", async () => {
 </script>
 </body>
 </html>
-
 
