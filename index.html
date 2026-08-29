@@ -976,3 +976,869 @@ window.setTimeout(() => {
 </script>
 </body>
 </html>
+    appearance:none;
+    -webkit-appearance:none;
+    background:#000;
+    color:var(--green);
+    font:inherit;
+    font-size:16px;
+    line-height:1.2;
+    box-shadow:inset 0 0 12px rgba(0,255,102,.04);
+    text-shadow:0 0 6px rgba(0,255,102,.6);
+}
+
+.field:focus{
+    border-color:var(--green);
+    box-shadow:0 0 14px rgba(0,255,102,.15);
+}
+
+.button,
+.small-button{
+    display:block;
+    width:100%;
+    min-height:48px;
+    border:1px solid var(--green2);
+    border-radius:0;
+    background:var(--dark);
+    color:var(--green);
+    font:inherit;
+    font-size:16px;
+    font-weight:bold;
+    letter-spacing:1px;
+    cursor:pointer;
+    touch-action:manipulation;
+    user-select:none;
+    -webkit-user-select:none;
+    text-shadow:0 0 6px rgba(0,255,102,.6);
+}
+
+.button{
+    margin-top:18px;
+}
+
+.button:active,
+.small-button:active{
+    background:#073d1c;
+    transform:translateY(1px);
+}
+
+.status{
+    min-height:26px;
+    margin-top:18px;
+    white-space:pre-wrap;
+    line-height:1.5;
+    font-size:14px;
+}
+
+.error{
+    color:var(--red);
+    text-shadow:0 0 7px rgba(255,0,0,.7);
+}
+
+.ok{
+    color:var(--green);
+}
+
+.message{
+    display:none;
+    white-space:pre-wrap;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    line-height:1.6;
+    font-size:clamp(14px,3.7vw,19px);
+    padding-bottom:40px;
+}
+
+.message.active{
+    display:block;
+}
+
+.message-header{
+    margin-bottom:24px;
+}
+
+.actions{
+    margin-top:30px;
+}
+
+.cursor{
+    display:inline-block;
+    width:9px;
+    height:1.05em;
+    margin-left:2px;
+    vertical-align:-.1em;
+    background:var(--green);
+    animation:blink .8s infinite;
+}
+
+@keyframes blink{
+    50%{opacity:0}
+}
+
+.footer{
+    margin-top:42px;
+    color:#087c36;
+    font-size:11px;
+    line-height:1.5;
+}
+
+.hidden{
+    display:none !important;
+}
+
+@media (max-width:600px){
+    .page{
+        padding:8px;
+    }
+
+    .terminal{
+        min-height:calc(100vh - 16px);
+        min-height:calc(100dvh - 16px);
+        padding:14px;
+    }
+
+    .header{
+        font-size:12px;
+    }
+
+    .field,
+    .button,
+    .small-button{
+        min-height:50px;
+    }
+}
+
+@media (prefers-reduced-motion:reduce){
+    *{
+        scroll-behavior:auto !important;
+    }
+
+    .cursor{
+        animation:none;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+<main class="terminal">
+
+    <div id="header" class="header">N.C.S. — NIGHT CITY SECURE
+
+NIGHT CITY SECURE v1.1
+LOCAL TERMINAL // ACCESS NODE
+
+INITIALIZING...
+VERIFYING NETWORK...
+WAITING FOR OPERATOR...<span class="cursor"></span></div>
+    
+    <form id="loginForm" class="login" onsubmit="return NCS.login(event);">
+        <div class="prompt">IDENTIFICAÇÃO DO OPERADOR</div>
+        <input
+            id="userId"
+            class="field"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            placeholder="Digite seu ID"
+        >
+
+        <div class="prompt">CÓDIGO DE AUTORIZAÇÃO</div>
+        <input
+            id="accessCode"
+            class="field"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Digite o código"
+        >
+
+          <button type="submit" class="button">[ INICIAR SESSÃO ]</button>
+
+        <div id="status" class="status" aria-live="polite"></div>
+    </form>
+
+    <section id="messageScreen" class="message" aria-live="polite">
+        <div id="messageContent"></div>
+
+        <div class="actions">
+            <button type="button" class="small-button" onclick="NCS.logout()">
+                [ ENCERRAR SESSÃO ]
+            </button>
+        </div>
+    </section>
+
+    <div class="footer">
+        N.C.S. // NIGHT CITY SECURE<br>
+        CONNECTION: LOCAL // ENCRYPTION: SIMULATED<br>
+        <span id="clock"></span>
+    </div>
+</main>
+</div>
+
+<script>
+
+const transmissions = [
+
+    /* -------------------- MENSAGEM #001 -------------------- */
+    {
+        id: "$hade",
+        code: "KURO-2078",
+        title: "ARASAKA SECURE NETWORK",
+        message: `
+ARASAKA SECURE NETWORK v9.4
+
+INITIALIZING...
+ACCESSING KURO NODE...
+VERIFYING OPERATOR...
+DECRYPTING TRANSMISSION...
+
+
+ACCESS GRANTED
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+ARASAKA SECURE NETWORK
+NÓ: ∅MEΠS
+REMETENTE: Bansh£e
+DESTINATÁRIO: §hade
+CLASSIFIXAÇÃO: KURO // SOMENTE OPERADOR
+
+
+§hade,
+
+
+Seus superiores requisitaram sua presença nesta operação.
+
+
+A autorização partiu diretamente do Sr. Arasaka.
+
+
+A partir deste momento, toda comunicação referente à missão ocorrerá exclusivamente entre você e eu.
+
+
+Você foi designado para uma operação de coleta de informações de alto risco.
+
+
+Seu objetivo é infiltrar-se na investigação conduzida pela NCPD sobre o roubo do protótipo de cyberware da Raven Microcybernetics.
+
+
+A Arasaka já tomou as providências necessárias para garantir sua inclusão na força-tarefa.
+
+
+Sua nova identidade será Adrian Cross.
+
+
+Toda a documentação necessária já foi inserida nos registros do Departamento de Polícia de Night City.
+
+
+O Sargento Aaron McCarlson recebeu a devida compensação para assegurar sua participação na investigação. Para todos os efeitos, você é apenas mais um investigador designado para reforçar a equipe.
+
+
+O Comissário Coleridge não conduzirá o primeiro briefing.
+
+
+Em seu lugar, comparecerá Jerry Fawlter.
+
+
+Considere essa informação apenas mais um detalhe operacional.
+
+
+Não demonstre surpresa.
+
+
+Não faça perguntas.
+
+
+Não permita que ninguém perceba que você esperava essa alteração.
+
+
+Seu único objetivo é observar.
+
+
+Coletar.
+
+
+Transmitir.
+
+
+Toda informação obtida deverá ser enviada exclusivamente para este canal.
+
+
+Nenhum outro setor da Arasaka possui autorização para receber dados desta operação.
+
+
+Caso qualquer agente da corporação tente estabelecer contato, negue conhecimento da missão e interrompa imediatamente a comunicação.
+
+
+A partir do momento em que assumir sua identidade operacional, você deixa de existir como §hade.
+
+
+Se for comprometido, negue qualquer vínculo com a Arasaka.
+
+
+Se for capturado, você jamais trabalhou para a Arasaka.
+
+
+Se for eliminado, esta operação jamais aconteceu.
+
+
+Ao término da missão, você não deixará a área por iniciativa própria.
+
+
+Quando chegar o momento da extração, você receberá uma nova transmissão contendo as coordenadas de encontro.
+
+
+Eu estarei esperando.
+
+
+Até lá...
+
+
+Permaneça invisível.
+
+
+— Bansh£e
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+END OF TRANSMISSION
+`
+    },
+
+    {
+    id: "Elina",
+    code: "Missão",
+    title: "KOLLEKTIVNOST SECURE TERMINAL",
+    message: `
+KOLLEKTIVNOST SECURE TERMINAL v2.8
+
+INITIALIZING...
+LOADING ENCRYPTION MODULE...
+ESTABLISHING SECURE CHANNEL...
+VERIFYING IDENTITY...
+
+
+ACCESS GRANTED
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+Canal Seguro // Casa da Lareira
+Origem: MÃE
+Destino: Agente E.
+Classificação: OLHOS APENAS
+
+
+Elina,
+
+
+Seu deslocamento para Night City foi autorizado.
+
+
+Ao chegar, apresente-se ao Comissário Coleridge, do Departamento de Polícia de Night City. Você será apresentada às autoridades locais como um ativo diplomático destacado para auxiliar a investigação do roubo do protótipo de cyberware da Raven Microcybernetics. Essa cobertura foi construída para lhe conceder acesso às informações que normalmente permaneceriam inacessíveis.
+
+
+O departamento designará um agente local para trabalhar ao seu lado. Coopere. Observe. Avalie. Confiança não faz parte desta missão.
+
+
+O Doutor demonstrou interesse incomum nos dados relacionados ao protótipo. Isso, por si só, basta para justificar sua presença.
+
+
+Nossos agentes obtiveram documentos sigilosos da Euro World-Bank. As informações sugerem uma possível ligação entre o incidente ocorrido em Crystal Palace e o protótipo desenvolvido pela Raven Microcybernetics. Ainda não enxergamos a estrutura completa. Apenas fragmentos.
+
+
+Se essa ligação existir, nenhuma corporação está perseguindo apenas tecnologia. Todas estão correndo em direção ao mesmo objetivo.
+
+
+Descubra qual é.
+
+
+Sua prioridade não é recuperar o protótipo.
+
+
+Sua prioridade é compreender sua natureza, identificar quem realmente o controla e transmitir toda informação relevante à Kollektivnost. Se recuperar o artefato favorecer esse objetivo, proceda. Caso contrário, conhecimento tem precedência sobre posse.
+
+
+Há algo grande movendo as peças deste tabuleiro. Grande o suficiente para fazer corporações rivais esconderem informações umas das outras e grande o suficiente para despertar o interesse do Doutor.
+
+
+Nós ainda não conseguimos vê-lo.
+
+
+Ajude-nos a enxergar.
+
+
+— Yuryeva Schneitzevna
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+END OF TRANSMISSION
+`
+},
+
+    {
+    id: "Elliot",
+    code: "Desconhecido",
+    title: "UNKNOWN SIGNAL RECEIVER",
+    message: `
+UNKNOWN SIGNAL RECEIVER v1.3
+
+INITIALIZING...
+SEARCHING FOR SIGNAL...
+SIGNAL DETECTED...
+DECRYPTING DATA STREAM...
+RECOVERING FRAGMENTS...
+
+
+WARNING
+
+
+TRANSMISSION INCOMPLETE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+ORIGEM DESCONHECIDA
+IDENTIFICAÇÃO DO REMETENTE: RIVARD WER
+LOCALIZAÇÃO APROXIMADA: SUB-DISTRITO GLEN, NIGHT CITY
+INTEGRIDADE DA TRANSMISSÃO: 41%
+
+
+Vale,
+
+
+Não sei se esta mensagem chegará inteira.
+
+
+Meu nome é Rivard Wer. Pelo menos era. Fui agente da NCPD. Se ainda sou... já não consigo afirmar.
+
+
+Estou enviando isso porque você ainda pode fazer alguma coisa. Eu já fui longe demais.
+
+
+Há meses percebo lacunas. Dias inteiros desaparecem. Conversas que nunca tive voltam como lembranças. Rostos conhecidos se tornam estranhos e, depois de algumas horas, parecem familiares outra vez.
+
+
+Eu tomo decisões que jamais tomaria.
+
+
+Depois me lembro delas como se sempre tivessem sido minhas.
+
+
+Essa não é a minha vida.
+
+
+Descobri algo em Night City. Algo grande o suficiente para engolir esta cidade inteira. Grande o suficiente para fazer pessoas esquecerem quem são.
+
+
+Não confie em ninguém.
+
+
+A NightCorp está sendo invadida há muito tempo.
+
+
+O prefeito... já está sob o controle dele.
+
+
+A FIA...
+
+
+A NetWatch...
+
+
+A Eur...
+
+
+...não consigo lembrar o restante.
+
+
+É assim que começa.
+
+
+Primeiro eles levam pequenos detalhes.
+
+
+Depois nomes.
+
+
+Depois rostos.
+
+
+Depois você.
+
+
+Se decidir continuar investigando, faça de tudo.
+
+
+Mas não faça como eu.
+
+
+Nunca entregue seus dados.
+
+
+Nunca aceite sincronizações neurais que você não possa verificar.
+
+
+Nunca permita que acessem seu perfil cognitivo.
+
+
+Suspeite de todos.
+
+
+Até de si mesmo.
+
+
+Se um dia você tiver certeza absoluta de alguma coisa...
+
+
+Desconfie.
+
+
+...
+
+
+Eles estão aqui.
+
+
+Eu consigo ouvir...
+
+
+[ERRO DE TRANSMISSÃO]
+
+
+[CONEXÃO PERDIDA]
+
+
+ÚLTIMO SINAL REGISTRADO: SUB-DISTRITO GLEN, NIGHT CITY.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+END OF SIGNAL
+`
+},
+
+    {
+    id: "Elliot",
+    code: "Caso-Raven",
+    title: "NCPD SECURE TERMINAL",
+    message: `
+NCPD SECURE TERMINAL v4.2
+
+INITIALIZING...
+LOADING INTERNAL DATABASE...
+ESTABLISHING SECURE CHANNEL...
+VERIFYING CREDENTIALS...
+
+
+ACCESS GRANTED
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+DEPARTAMENTO DE POLÍCIA DE NIGHT CITY
+Origem: Chefe Aaron McCarlson
+Destino: Detetive Elliot Vale
+Classificação: USO INTERNO – NCPD
+
+
+Detetive,
+
+
+Por determinação desta chefia, você foi designado para integrar a força-tarefa responsável pela investigação do roubo do protótipo de cyberware pertencente à Raven Microcybernetics.
+
+
+Sua indicação foi baseada em seu histórico operacional, na iniciativa demonstrada em campo e na confiança que este departamento deposita em sua capacidade de conduzir investigações de alta complexidade.
+
+
+Apresente-se ao Comissário Coleridge no Quartel-General da NCPD. Os detalhes da operação serão repassados durante o briefing.
+
+
+Como parte de um acordo de cooperação internacional, você atuará ao lado de um ativo diplomático estrangeiro designado para auxiliar a investigação. Espera-se profissionalismo, discrição e total cooperação entre as partes. Divergências de jurisdição ou procedimentos deverão ser reportadas exclusivamente ao Comissário Coleridge.
+
+
+As informações atualmente disponíveis indicam que este caso ultrapassa os limites de um roubo corporativo convencional. Mais detalhes serão fornecidos presencialmente.
+
+
+Compareça equipado para operação.
+
+
+Boa sorte.
+
+
+— Aaron McCarlson
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+END OF TRANSMISSION
+`
+},
+
+    {
+    id: "Mestre",
+    code: "Sessão-1",
+    title: "NCS // SESSION RECORD",
+    message: `
+NCS SESSION RECORD
+
+SESSION 01
+STATUS: CONCLUÍDA
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+REGISTRO DA SESSÃO
+
+
+A força-tarefa iniciou a investigação do roubo do protótipo de cyberware da Raven Microcybernetics.
+
+Os agentes se deslocaram até a cena do roubo do comboio da Raven, onde realizaram uma investigação preliminar.
+
+No local, conversaram com alguns trabalhadores e analisaram as câmeras de segurança disponíveis.
+
+Durante a análise das imagens e dos vestígios encontrados, foram identificadas características que indicavam que os responsáveis pelo ataque possuíam algum tipo de ligação ou treinamento militar.
+
+As roupas utilizadas e as armas empregadas durante o ataque apresentavam características associadas ao exército.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+OBSERVAÇÃO ADICIONAL
+
+
+Durante a investigação, os agentes identificaram um indivíduo corporativo no topo de um prédio próximo à cena do crime.
+
+O indivíduo aparentemente observava o local.
+
+Os agentes decidiram abordá-lo com o objetivo de obter informações sobre sua presença e possível envolvimento no caso.
+
+Um confronto foi iniciado.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+INTERVENÇÃO
+
+
+Antes que os agentes pudessem obter informações do indivíduo, a Trauma Team chegou ao local e interveio.
+
+O corp foi retirado da área antes que pudesse ser interrogado.
+
+Nenhuma informação direta foi obtida.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+CONCLUSÃO DA SESSÃO
+
+
+Após o incidente, a equipe encerrou as atividades no local.
+
+Os agentes retornaram aos apartamentos em Heywood.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+PISTAS REGISTRADAS
+
+• Atacantes utilizando roupas e armamento com características militares.
+
+• Possível ligação dos responsáveis pelo roubo com o exército.
+
+• Indivíduo corporativo observado no topo de um prédio próximo à cena.
+
+• Motivo da presença do corp permanece desconhecido.
+
+• Possível existência de outros envolvidos além dos responsáveis pelo ataque.
+
+• Protótipo de cyberware da Raven Microcybernetics permanece desaparecido.
+
+
+STATUS DO CASO: INVESTIGAÇÃO EM ANDAMENTO
+
+LOCAL ATUAL: APARTAMENTOS DE HEYWOOD
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+END OF SESSION RECORD
+`
+},
+
+];
+
+const NCS = {
+    login(event){
+        if(event){
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        const id = document.getElementById("userId").value.trim();
+        const code = document.getElementById("accessCode").value.trim();
+        const status = document.getElementById("status");
+
+        if(!id || !code){
+            NCS.setStatus(
+                "> ERRO: ID E CÓDIGO SÃO OBRIGATÓRIOS.",
+                true
+            );
+            return false;
+        }
+
+        const result = transmissions.find(item =>
+            item.id.trim().toLowerCase() === id.toLowerCase() &&
+            item.code.trim().toLowerCase() === code.toLowerCase()
+        );
+
+        if(!result){
+            NCS.setStatus(
+                "> ACESSO NEGADO.\n> ID/CÓDIGO INVÁLIDO OU TRANSMISSÃO NÃO ENCONTRADA.",
+                true
+            );
+            return false;
+        }
+
+        NCS.setStatus("> AUTENTICAÇÃO VALIDADA.", false);
+
+        document.getElementById("loginForm").classList.add("hidden");
+
+        const screen = document.getElementById("messageScreen");
+        screen.classList.add("active");
+
+        NCS.showMessage(result, id);
+
+        return false;
+    },
+
+    setStatus(text, error){
+        const el = document.getElementById("status");
+        el.textContent = text;
+        el.className = error ? "status error" : "status ok";
+    },
+
+    showMessage(transmission, operator){
+        const container = document.getElementById("messageContent");
+        container.innerHTML = "";
+
+        const header = document.createElement("div");
+        header.className = "message-header";
+        header.textContent =
+`N.C.S. // ACCESS GRANTED
+
+TRANSMISSION: ${transmission.title}
+OPERATOR: ${operator}
+CLASSIFICATION: RESTRICTED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
+
+        const body = document.createElement("div");
+        const cursor = document.createElement("span");
+        cursor.className = "cursor";
+
+        container.appendChild(header);
+        container.appendChild(body);
+        container.appendChild(cursor);
+
+        let index = 0;
+        const text = transmission.message;
+
+        function type(){
+            if(index >= text.length){
+                cursor.remove();
+                return;
+            }
+
+            body.textContent = text.slice(0, index + 1);
+            index++;
+
+            let speed = 11 + Math.random() * 13;
+            const char = text.charAt(index - 1);
+
+            if(char === "\n") speed = 48;
+            else if(char === ".") speed = 95;
+            else if(char === ",") speed = 70;
+            else if(char === ":") speed = 80;
+
+            window.setTimeout(type, speed);
+        }
+
+        window.setTimeout(type, 250);
+
+        window.setTimeout(() => {
+            screenIntoViewSafe();
+        }, 100);
+    },
+
+    logout(){
+        document.getElementById("messageScreen").classList.remove("active");
+        document.getElementById("loginForm").classList.remove("hidden");
+        document.getElementById("userId").value = "";
+        document.getElementById("accessCode").value = "";
+        NCS.setStatus("> SESSÃO ENCERRADA.", false);
+
+        window.scrollTo({
+            top:0,
+            behavior:"smooth"
+        });
+
+        window.setTimeout(() => {
+            document.getElementById("userId").focus();
+        }, 250);
+    }
+};
+
+function screenIntoViewSafe(){
+    const screen = document.getElementById("messageScreen");
+
+    if(screen && screen.scrollIntoView){
+        screen.scrollIntoView({
+            behavior:"smooth",
+            block:"start"
+        });
+    }
+}
+
+function updateClock(){
+    const now = new Date();
+    document.getElementById("clock").textContent =
+        "SYSTEM CLOCK: " +
+        now.toLocaleDateString("pt-BR") +
+        " // " +
+        now.toLocaleTimeString("pt-BR");
+}
+
+updateClock();
+window.setInterval(updateClock, 1000);
+
+window.setTimeout(() => {
+    const input = document.getElementById("userId");
+    if(input) input.focus();
+}, 700);
+</script>
+</body>
+</html>
