@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>N.C.S. — NIGHT CITY SECURE</title>
+
+<style>
+:root{
+    --green:#00ff66;
+    --green2:#00b84a;
+    --dark:#001408;
+    --red:#ff3030;
+}
+
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html{
+    background:#000;
+    color-scheme:dark;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    min-height:100dvh;
+    background:#000;
+    color:var(--green);
+    font-family:Consolas,"Courier New",monospace;
+    text-shadow:0 0 6px rgba(0,255,102,.55);
+    overflow-x:hidden;
+}
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:100;
+    background:repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.025) 0,
+        rgba(255,255,255,.025) 2px,
+        transparent 3px,
+        transparent 5px
+    );
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:101;
+    background:radial-gradient(circle,transparent 50%,rgba(0,0,0,.72));
+}
+
+.page{
+    width:100%;
+    max-width:1000px;
+    min-height:100vh;
+    min-height:100dvh;
+    margin:0 auto;
+    padding:12px;
+    position:relative;
+}
+
+.terminal{
+    min-height:calc(100vh - 24px);
+    min-height:calc(100dvh - 24px);
+    border:1px solid rgba(0,255,102,.38);
+    background:rgba(0,0,0,.94);
+    padding:clamp(14px,4vw,28px);
+    position:relative;
+    z-index:2;
+}
+
+.header{
+    white-space:pre-wrap;
+    font-size:clamp(12px,3vw,18px);
+    line-height:1.5;
+    margin-bottom:28px;
+}
+
+.login{
+    width:100%;
+    max-width:680px;
+    margin:0 auto;
+}
+
+.prompt{
+    margin:17px 0 7px;
+    font-size:clamp(13px,3.5vw,17px);
+    line-height:1.4;
+}
+
+.prompt::before{
+    content:"> ";
+}
+
+.field{
+    display:block;
+    width:100%;
+    min-height:48px;
+    padding:12px 14px;
+    border:1px solid var(--green2);
+    border-radius:0;
+    outline:none;
+    appearance:none;
+    -webkit-appearance:none;
+    background:#000;
+    color:var(--green);
+    font:inherit;
+    font-size:16px;
+    line-height:1.2;
+    box-shadow:inset 0 0 12px rgba(0,255,102,.04);
+    text-shadow:0 0 6px rgba(0,255,102,.6);
+}
+
+.field:focus{
+    border-color:var(--green);
+    box-shadow:0 0 14px rgba(0,255,102,.15);
+}
+
+.button,
+.small-button{
+    display:block;
+    width:100%;
+    min-height:48px;
+    border:1px solid var(--green2);
+    border-radius:0;
+    background:var(--dark);
+    color:var(--green);
+    font:inherit;
+    font-size:16px;
+    font-weight:bold;
+    letter-spacing:1px;
+    cursor:pointer;
+    touch-action:manipulation;
+    user-select:none;
+    -webkit-user-select:none;
+    text-shadow:0 0 6px rgba(0,255,102,.6);
+}
+
+.button{
+    margin-top:18px;
+}
+
+.button:active,
+.small-button:active{
+    background:#073d1c;
+    transform:translateY(1px);
+}
+
+.status{
+    min-height:26px;
+    margin-top:18px;
+    white-space:pre-wrap;
+    line-height:1.5;
+    font-size:14px;
+}
+
+.error{
+    color:var(--red);
+    text-shadow:0 0 7px rgba(255,0,0,.7);
+}
+
+.ok{
+    color:var(--green);
+}
+
+.message{
+    display:none;
+    white-space:pre-wrap;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    line-height:1.6;
+    font-size:clamp(14px,3.7vw,19px);
+    padding-bottom:40px;
+}
+
+.message.active{
+    display:block;
+}
+
+.message-header{
+    margin-bottom:24px;
+}
+
+.actions{
+    margin-top:30px;
+}
+
+.cursor{
+    display:inline-block;
+    width:9px;
+    height:1.05em;
+    margin-left:2px;
+    vertical-align:-.1em;
+    background:var(--green);
+    animation:blink .8s infinite;
+}
+
+@keyframes blink{
+    50%{opacity:0}
+}
+
+.footer{
+    margin-top:42px;
+    color:#087c36;
+    font-size:11px;
+    line-height:1.5;
+}
+
+.hidden{
+    display:none !important;
+}
+
+@media (max-width:600px){
+    .page{
+        padding:8px;
+    }
+
+    .terminal{
+        min-height:calc(100vh - 16px);
+        min-height:calc(100dvh - 16px);
+        padding:14px;
+    }
+
+    .header{
+        font-size:12px;
+    }
+
+    .field,
+    .button,
+    .small-button{
+        min-height:50px;
+    }
+}
+
+@media (prefers-reduced-motion:reduce){
+    *{
+        scroll-behavior:auto !important;
+    }
+
+    .cursor{
+        animation:none;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+<main class="terminal">
+
+    <div id="header" class="header">N.C.S. — NIGHT CITY SECURE
+
+NIGHT CITY SECURE v1.1
+LOCAL TERMINAL // ACCESS NODE
+
+INITIALIZING...
+VERIFYING NETWORK...
+WAITING FOR OPERATOR...<span class="cursor"></span></div>
+
+    <!-- ============================================================
+         ÁREA DO PLAYER
+         NÃO PRECISA ALTERAR NADA AQUI.
+         ============================================================ -->
+    <form id="loginForm" class="login" onsubmit="return NCS.login(event);">
+        <div class="prompt">IDENTIFICAÇÃO DO OPERADOR</div>
+        <input
+            id="userId"
+            class="field"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            placeholder="Digite seu ID"
+        >
+
+        <div class="prompt">CÓDIGO DE AUTORIZAÇÃO</div>
+        <input
+            id="accessCode"
+            class="field"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Digite o código"
+        >
+
+        <!-- A ação agora está diretamente ligada ao FORM.
+             Isso evita o problema de o evento de clique não ser registrado. -->
+        <button type="submit" class="button">[ INICIAR SESSÃO ]</button>
+
+        <div id="status" class="status" aria-live="polite"></div>
+    </form>
+
+    <section id="messageScreen" class="message" aria-live="polite">
+        <div id="messageContent"></div>
+
+        <div class="actions">
+            <button type="button" class="small-button" onclick="NCS.logout()">
+                [ ENCERRAR SESSÃO ]
+            </button>
+        </div>
+    </section>
+
+    <div class="footer">
+        N.C.S. // NIGHT CITY SECURE<br>
+        CONNECTION: LOCAL // ENCRYPTION: SIMULATED<br>
+        <span id="clock"></span>
+    </div>
+</main>
+</div>
+
+<script>
+/* ================================================================
+   ================================================================
+   N.C.S. — ÁREA DO MESTRE
+   ================================================================
+   AQUI VOCÊ CADASTRA AS TRANSMISSÕES.
+
+   Para criar uma nova mensagem, copie este bloco:
+
+   {
+       id: "ID_DO_PLAYER",
+       code: "CODIGO",
+       title: "TÍTULO",
+       message: `
+   SUA MENSAGEM AQUI.
+   `
+   },
+
+   O PLAYER precisa informar exatamente o ID + código correspondentes.
+   O sistema mostrará somente a mensagem associada aos dois.
+
+   ================================================================ */
+
+const transmissions = [
+
+    /* -------------------- MENSAGEM #001 -------------------- */
+    {
+        id: "SHADE",
+        code: "KURO-2078",
+        title: "ARASAKA SECURE NETWORK",
+        message: `
+ARASAKA SECURE NETWORK v9.4
+
+INITIALIZING...
+ACCESSING KURO NODE...
+VERIFYING OPERATOR...
+DECRYPTING TRANSMISSION...
+
+
+ACCESS GRANTED
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+ARASAKA SECURE NETWORK
+NÓ: ∅MEΠS
+REMETENTE: Bansh£e
+DESTINATÁRIO: §hade
+CLASSIFICAÇÃO: KURO // SOMENTE OPERADOR
+
+
+§hade,
+
+
+Seus superiores requisitaram sua presença nesta operação.
+
+
+A autorização partiu diretamente do Sr. Arasaka.
+
+
+A partir deste momento, toda comunicação referente à missão ocorrerá exclusivamente entre você e eu.
+
+
+Você foi designado para uma operação de coleta de informações de alto risco.
+
+
+Seu objetivo é infiltrar-se na investigação conduzida pela NCPD sobre o roubo do protótipo de cyberware da Raven Microcybernetics.
+
+
+A Arasaka já tomou as providências necessárias para garantir sua inclusão na força-tarefa.
+
+
+Sua nova identidade será Adrian Cross.
+
+
+Toda a documentação necessária já foi inserida nos registros do Departamento de Polícia de Night City.
+
+
+O Sargento Aaron McCarlson recebeu a devida compensação para assegurar sua participação na investigação. Para todos os efeitos, você é apenas mais um investigador designado para reforçar a equipe.
+
+
+O Comissário Coleridge não conduzirá o primeiro briefing.
+
+
+Em seu lugar, comparecerá Jerry Fawlter.
+
+
+Considere essa informação apenas mais um detalhe operacional.
+
+
+Não demonstre surpresa.
+
+
+Não faça perguntas.
+
+
+Não permita que ninguém perceba que você esperava essa alteração.
+
+
+Seu único objetivo é observar.
+
+
+Coletar.
+
+
+Transmitir.
+
+
+Toda informação obtida deverá ser enviada exclusivamente para este canal.
+
+
+Nenhum outro setor da Arasaka possui autorização para receber dados desta operação.
+
+
+Caso qualquer agente da corporação tente estabelecer contato, negue conhecimento da missão e interrompa imediatamente a comunicação.
+
+
+A partir do momento em que assumir sua identidade operacional, você deixa de existir como §hade.
+
+
+Se for comprometido, negue qualquer vínculo com a Arasaka.
+
+
+Se for capturado, você jamais trabalhou para a Arasaka.
+
+
+Se for eliminado, esta operação jamais aconteceu.
+
+
+Ao término da missão, você não deixará a área por iniciativa própria.
+
+
+Quando chegar o momento da extração, você receberá uma nova transmissão contendo as coordenadas de encontro.
+
+
+Eu estarei esperando.
+
+
+Até lá...
+
+
+Permaneça invisível.
+
+
+— Bansh£e
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+END OF TRANSMISSION
+`
+    },
+
+    /* ============================================================
+       EXEMPLO DE NOVA MENSAGEM.
+       COPIE ESTE BLOCO PARA ADICIONAR OUTROS PLAYERS.
+       ============================================================ */
+    /*
+    {
+        id: "ELINA",
+        code: "RAVEN-44",
+        title: "NCPD SECURE CHANNEL",
+        message: `
+NCPD SECURE CHANNEL
+
+ACCESS GRANTED
+
+DESTINATÁRIO: ELINA
+CLASSIFICAÇÃO: RESTRITO
+
+
+Sua missão começa agora.
+
+Observe.
+Colete.
+Transmita.
+
+
+— N.C.S.
+
+END OF TRANSMISSION
+`
+    },
+    */
+
+];
+
+/* ================================================================
+   NÃO EDITE A PARTIR DAQUI.
+   ================================================================ */
+
+const NCS = {
+    login(event){
+        if(event){
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        const id = document.getElementById("userId").value.trim();
+        const code = document.getElementById("accessCode").value.trim();
+        const status = document.getElementById("status");
+
+        if(!id || !code){
+            NCS.setStatus(
+                "> ERRO: ID E CÓDIGO SÃO OBRIGATÓRIOS.",
+                true
+            );
+            return false;
+        }
+
+        const result = transmissions.find(item =>
+            item.id.trim().toLowerCase() === id.toLowerCase() &&
+            item.code.trim().toLowerCase() === code.toLowerCase()
+        );
+
+        if(!result){
+            NCS.setStatus(
+                "> ACESSO NEGADO.\n> ID/CÓDIGO INVÁLIDO OU TRANSMISSÃO NÃO ENCONTRADA.",
+                true
+            );
+            return false;
+        }
+
+        NCS.setStatus("> AUTENTICAÇÃO VALIDADA.", false);
+
+        document.getElementById("loginForm").classList.add("hidden");
+
+        const screen = document.getElementById("messageScreen");
+        screen.classList.add("active");
+
+        NCS.showMessage(result, id);
+
+        return false;
+    },
+
+    setStatus(text, error){
+        const el = document.getElementById("status");
+        el.textContent = text;
+        el.className = error ? "status error" : "status ok";
+    },
+
+    showMessage(transmission, operator){
+        const container = document.getElementById("messageContent");
+        container.innerHTML = "";
+
+        const header = document.createElement("div");
+        header.className = "message-header";
+        header.textContent =
+`N.C.S. // ACCESS GRANTED
+
+TRANSMISSION: ${transmission.title}
+OPERATOR: ${operator}
+CLASSIFICATION: RESTRICTED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
+
+        const body = document.createElement("div");
+        const cursor = document.createElement("span");
+        cursor.className = "cursor";
+
+        container.appendChild(header);
+        container.appendChild(body);
+        container.appendChild(cursor);
+
+        let index = 0;
+        const text = transmission.message;
+
+        function type(){
+            if(index >= text.length){
+                cursor.remove();
+                return;
+            }
+
+            body.textContent = text.slice(0, index + 1);
+            index++;
+
+            let speed = 11 + Math.random() * 13;
+            const char = text.charAt(index - 1);
+
+            if(char === "\n") speed = 48;
+            else if(char === ".") speed = 95;
+            else if(char === ",") speed = 70;
+            else if(char === ":") speed = 80;
+
+            window.setTimeout(type, speed);
+        }
+
+        window.setTimeout(type, 250);
+
+        window.setTimeout(() => {
+            screenIntoViewSafe();
+        }, 100);
+    },
+
+    logout(){
+        document.getElementById("messageScreen").classList.remove("active");
+        document.getElementById("loginForm").classList.remove("hidden");
+        document.getElementById("userId").value = "";
+        document.getElementById("accessCode").value = "";
+        NCS.setStatus("> SESSÃO ENCERRADA.", false);
+
+        window.scrollTo({
+            top:0,
+            behavior:"smooth"
+        });
+
+        window.setTimeout(() => {
+            document.getElementById("userId").focus();
+        }, 250);
+    }
+};
+
+function screenIntoViewSafe(){
+    const screen = document.getElementById("messageScreen");
+
+    if(screen && screen.scrollIntoView){
+        screen.scrollIntoView({
+            behavior:"smooth",
+            block:"start"
+        });
+    }
+}
+
+function updateClock(){
+    const now = new Date();
+    document.getElementById("clock").textContent =
+        "SYSTEM CLOCK: " +
+        now.toLocaleDateString("pt-BR") +
+        " // " +
+        now.toLocaleTimeString("pt-BR");
+}
+
+updateClock();
+window.setInterval(updateClock, 1000);
+
+window.setTimeout(() => {
+    const input = document.getElementById("userId");
+    if(input) input.focus();
+}, 700);
+</script>
+</body>
+</html>
